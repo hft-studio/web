@@ -21,7 +21,6 @@ export const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
     const success = await onSubmit(formData)
-    console.log('success', success)
     if (success) {
       router.push('/dashboard')
     } else {
