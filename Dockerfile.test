@@ -1,0 +1,35 @@
+FROM mcr.microsoft.com/playwright:v1.49.1-jammy
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package.json yarn.lock ./
+
+# Install dependencies
+RUN yarn install
+
+# Copy project files
+COPY . .
+
+# Copy env file if you have one
+COPY .env.local .env.local
+
+# Create a startup script
+RUN echo '#!/bin/bash\n\
+yarn dev & \
+while ! curl -s http://localhost:3000 > /dev/null; do \
+  echo "Waiting for server to be ready..."; \
+  sleep 2; \
+done; \
+echo "Server is ready! Running tests..."; \
+yarn playwright test' > /app/start.sh && chmod +x /app/start.sh
+
+# Set environment variables
+ENV NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+ENV TEST_USER_EMAIL=test@example.com
+ENV TEST_USER_PASSWORD=password123
+
+# Run the startup script
+CMD ["/app/start.sh"] 
