@@ -12,7 +12,7 @@ export default function SignUpPage() {
           password: formData.get('password') as string,
         }
       
-        const { data: _signUpData, error } = await supabase.auth.signUp(data)
+        const { error } = await supabase.auth.signUp(data)
       
         if (error) {
           return false

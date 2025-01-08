@@ -12,7 +12,7 @@ export default function LoginPage() {
       password: formData.get('password') as string,
     }
   
-    const { data: _loginData, error } = await supabase.auth.signInWithPassword(data)
+    const { error } = await supabase.auth.signInWithPassword(data)
   
     if (error) {
       console.error(error)
