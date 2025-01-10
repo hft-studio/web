@@ -15,7 +15,7 @@ import { LiquidityPoolTable } from "@/components/liquidity-pool-table"
 
 export default function Page() {
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2">
@@ -35,8 +35,8 @@ export default function Page() {
           
         </header>
         <div className="flex flex-1 flex-col gap-4 px-4 py-10">
-          <div className="mx-auto h-full w-full max-w-3xl rounded-xl bg-muted/50">
-            <LiquidityPoolTable />
+          <div className="mx-auto h-full w-full max-w-3xl rounded-xl border">
+          <LiquidityPoolTable />
           </div>
         </div>
       </SidebarInset>
