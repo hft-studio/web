@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
+import { User } from "@supabase/supabase-js"
 
 import {
   Sidebar,
@@ -18,15 +19,12 @@ import { NavUser } from "@/components/nav-user"
 import { sidebarConfig } from "@/config/sidebar"
 import { Activity } from "lucide-react"
 
-const userData = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  avatar: "https://github.com/shadcn.png",
+interface AppSidebarClientProps extends React.ComponentProps<typeof Sidebar> {
+  user?: User | null
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebarClient({ user, ...props }: AppSidebarClientProps) {
   const router = useRouter()
-
   return (
     <Sidebar
       collapsible="icon"
@@ -75,7 +73,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
-          <NavUser user={userData} />
+          <NavUser user={user} />
         </SidebarFooter>
       </Sidebar>
   )
