@@ -43,7 +43,7 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/auth')
   ) {
     // no user, potentially respond by redirecting the user to the login page
-    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    if (request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/pools')) {
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       return NextResponse.redirect(url)

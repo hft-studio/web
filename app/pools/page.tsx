@@ -11,6 +11,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar"
+import { LiquidityPoolTable } from "@/components/liquidity-pool-table"
 
 export default function Page() {
   return (
@@ -25,7 +26,7 @@ export default function Page() {
               <BreadcrumbList>
                 <BreadcrumbItem>
                   <BreadcrumbPage className="line-clamp-1">
-                    Dashboard
+                    Liquidity Pools
                   </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
@@ -35,7 +36,7 @@ export default function Page() {
         </header>
         <div className="flex flex-1 flex-col gap-4 px-4 py-10">
           <div className="mx-auto h-full w-full max-w-3xl rounded-xl bg-muted/50">
-            <h1 className="text-2xl font-bold">Dashboard</h1>
+            <LiquidityPoolTable />
           </div>
         </div>
       </SidebarInset>
