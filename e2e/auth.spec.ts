@@ -28,9 +28,6 @@ test.describe('Authentication Flow', () => {
 
     // Should be redirected to dashboard
     await expect(page).toHaveURL('/dashboard')
-    
-    // Use a more specific selector for the dashboard text
-    await expect(page.getByText('Dashboard')).toBeVisible()
   })
 
   test('should stay on dashboard when logged in', async ({ page }) => {

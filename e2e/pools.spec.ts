@@ -15,7 +15,7 @@ test.describe('Pools Table', () => {
 
   test('should display whitelisted pools', async ({ page }) => {
     // Go to dashboard
-    await page.goto('/dashboard')
+    await page.goto('/pools')
 
     // Wait for table to load
     await page.waitForSelector('table')
