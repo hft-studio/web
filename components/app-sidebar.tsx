@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/sidebar"
 import { NavUser } from "@/components/nav-user"
 import { sidebarConfig } from "@/config/sidebar"
-import { Activity, Command } from "lucide-react"
+import { Activity } from "lucide-react"
 
 const userData = {
   name: "John Doe",
