@@ -14,7 +14,7 @@ test.describe('Pools Table', () => {
   })
 
   test('should display whitelisted pools', async ({ page }) => {
-    // Go to dashboard
+    // Go to pools page
     await page.goto('/pools')
 
     // Wait for table to load
@@ -29,8 +29,8 @@ test.describe('Pools Table', () => {
     // Clear any existing session
     await page.context().clearCookies()
     
-    // Try to access dashboard directly
-    await page.goto('/dashboard')
+    // Try to access pools page directly
+    await page.goto('/pools')
     
     // Should be redirected to login
     await expect(page).toHaveURL('/login')
