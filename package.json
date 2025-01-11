@@ -7,10 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "gen-supabase-types": "npx supabase gen types typescript --local --schema public > lib/database.types.ts",
-    "test:e2e": "docker build -f Dockerfile.test -t playwright-tests . && docker run -v $(pwd)/.env.local:/app/.env.local playwright-tests"
+    "gen-supabase-types": "npx supabase gen types typescript --local --schema public > types/database.ts"
   },
   "dependencies": {
+    "@coinbase/coinbase-sdk": "^0.7.0",
     "@radix-ui/react-avatar": "^1.1.2",
     "@radix-ui/react-collapsible": "^1.1.2",
     "@radix-ui/react-dialog": "^1.1.4",
