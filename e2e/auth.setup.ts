@@ -1,17 +1,22 @@
 import { createTestClient } from '@/lib/supabase/test-client'
 
-async function globalSetup() {
-    console.log('Setting up test user...')
-    const supabase = createTestClient()
-    const { data, error } = await supabase.auth.signUp({
-        email: 'test@example.com',
-        password: 'password123'
-    })
+const TEST_EMAIL = process.env.TEST_EMAIL!
+const TEST_PASSWORD = process.env.TEST_PASSWORD!
 
-    if (error) {
-        console.error('Setup error:', error)
-    } else {
-        console.log('Test user created:', data)
+async function globalSetup() {
+    const supabase = createTestClient()
+    if( process.env.NODE_ENV === 'development' ) {
+        const { data, error } = await supabase.auth.signUp({
+            email: TEST_EMAIL,
+            password: TEST_PASSWORD
+        })
+    
+        if (error) {
+            console.error('Setup error:', error)
+        } else {
+            console.log('Test user created:', data)
+        }
+
     }
 }
 

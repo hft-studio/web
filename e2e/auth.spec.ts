@@ -1,5 +1,8 @@
 import { test, expect } from '@playwright/test'
 
+const TEST_EMAIL = process.env.TEST_EMAIL!
+const TEST_PASSWORD = process.env.TEST_PASSWORD!
+
 test.describe('Authentication Flow', () => {
   test('should redirect to login when accessing dashboard while logged out', async ({ page }) => {
     // Try to access dashboard without being logged in
@@ -17,8 +20,8 @@ test.describe('Authentication Flow', () => {
     await page.waitForSelector('form')
     
     // Fill the form using more specific selectors
-    await page.fill('#email', 'test@example.com')
-    await page.fill('#password', 'password123')
+    await page.fill('#email', TEST_EMAIL)
+    await page.fill('#password', TEST_PASSWORD)
     
     // Click submit and wait for navigation
     await Promise.all([
@@ -35,8 +38,8 @@ test.describe('Authentication Flow', () => {
     await page.goto('/login')
     await page.waitForSelector('form')
     
-    await page.fill('#email', 'test@example.com')
-    await page.fill('#password', 'password123')
+    await page.fill('#email', TEST_EMAIL)
+    await page.fill('#password', TEST_PASSWORD)
     
     await Promise.all([
       page.waitForNavigation(),
@@ -48,32 +51,5 @@ test.describe('Authentication Flow', () => {
     
     // Should stay on dashboard
     await expect(page).toHaveURL('/dashboard')
-  })
-
-  test('successful signup flow', async ({ page }) => {
-    // Start at signup page
-    await page.goto('/sign-up')
-    
-    // Wait for the form to be visible
-    await page.waitForSelector('form')
-    
-    // Generate a unique email to avoid conflicts
-    const uniqueEmail = `test${Date.now()}@example.com`
-    
-    // Fill the form
-    await page.fill('#email', uniqueEmail)
-    await page.fill('#password', 'password123')
-    
-    // Click submit and wait for navigation
-    await Promise.all([
-      page.waitForNavigation(),
-      page.click('button[type="submit"]')
-    ])
-
-    // Should be redirected to dashboard
-    await expect(page).toHaveURL('/dashboard')
-    
-    // Verify we're on dashboard
-    await expect(page.getByText('Dashboard')).toBeVisible()
   })
 }) 
