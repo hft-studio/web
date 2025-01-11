@@ -1,12 +1,15 @@
 import { test, expect } from '@playwright/test'
 
+const TEST_EMAIL = process.env.TEST_EMAIL!
+const TEST_PASSWORD = process.env.TEST_PASSWORD!
+
 test.describe('Pools Table', () => {
   test.beforeEach(async ({ page }) => {
     // Login first
     await page.goto('/login')
     await page.waitForSelector('form')
-    await page.fill('#email', 'test@example.com')
-    await page.fill('#password', 'password123')
+    await page.fill('#email', TEST_EMAIL)
+    await page.fill('#password', TEST_PASSWORD)
     await Promise.all([
       page.waitForNavigation(),
       page.click('button[type="submit"]')
