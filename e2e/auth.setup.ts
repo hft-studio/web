@@ -4,8 +4,8 @@ const TEST_EMAIL = process.env.TEST_EMAIL!
 const TEST_PASSWORD = process.env.TEST_PASSWORD!
 
 async function globalSetup() {
-    const supabase = createTestClient()
     if( process.env.NODE_ENV === 'development' ) {
+        const supabase = createTestClient()
         const { data, error } = await supabase.auth.signUp({
             email: TEST_EMAIL,
             password: TEST_PASSWORD
