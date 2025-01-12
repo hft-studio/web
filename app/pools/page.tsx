@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sidebar"
 import { LiquidityPoolTable } from "@/components/liquidity-pool-table"
 
+
 export default function Page() {
   return (
     <SidebarProvider defaultOpen={true}>
@@ -32,11 +33,10 @@ export default function Page() {
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          
         </header>
         <div className="flex flex-1 flex-col gap-4 px-4 py-10">
           <div className="mx-auto h-full w-full max-w-3xl rounded-xl border">
-          <LiquidityPoolTable />
+            <LiquidityPoolTable />
           </div>
         </div>
       </SidebarInset>
