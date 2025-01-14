@@ -12,26 +12,22 @@ export function useWallet() {
   const [balances, setBalances] = useState<Record<string, number> | null>(null)
   const [prices, setPrices] = useState<Record<string, number> | null>(null)
 
-  // Fetch prices from CoinGecko
+  // Fetch prices from our custom API
   useEffect(() => {
     async function fetchPrices() {
       try {
-        const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=ethereum,usd-coin,wrapped-ethereum&vs_currencies=usd')
+        const response = await fetch('/api/prices')
         if (!response.ok) throw new Error('Failed to fetch prices')
         const data = await response.json()
-        
-        setPrices({
-          eth: data['ethereum']?.usd ?? 0,
-          usdc: data['usd-coin']?.usd ?? 1, // USDC should always be ~1
-          weth: data['wrapped-ethereum']?.usd ?? 0
-        })
+        setPrices(data)
       } catch (err) {
         console.error("Error fetching prices:", err)
         // Fallback prices if API fails
         setPrices({
           eth: 0,
-          usdc: 1,
-          weth: 0
+          usdc: 1, // USDC should always be ~1
+          weth: 0,
+          btc: 0
         })
       }
     }

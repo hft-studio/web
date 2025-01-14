@@ -1,4 +1,4 @@
-import { Home, Droplets } from "lucide-react";
+import { Home, Droplets, Wallet } from "lucide-react";
 
 export const sidebarConfig = {
   navMain: [
@@ -11,6 +11,11 @@ export const sidebarConfig = {
       title: "Pools",
       url: "/pools",
       icon: Droplets,
+    },
+    {
+      title: "Wallet",
+      url: "/wallet",
+      icon: Wallet,
     }
   ]
 }

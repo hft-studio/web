@@ -7,7 +7,7 @@ import { TokenImage } from '@coinbase/onchainkit/token';
 import { availableTokens } from "@/config/tokens-whitelist"
 import { assetColors } from "@/lib/tokens"
 import { Button } from "@/components/ui/button"
-import { Deposit } from "./deposit";
+import { DepositComponent } from "./deposit";
 import { Copy } from "lucide-react"
 
 function truncateAddress(address: string) {
@@ -100,7 +100,7 @@ export function Wallet({
             </div>
 
             <div className="border-t p-4">
-                <Deposit />
+                {address && <DepositComponent defaultAddress={address} />}
             </div>
         </div>
     )
