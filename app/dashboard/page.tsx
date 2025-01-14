@@ -1,4 +1,5 @@
 import { AppSidebar } from "@/components/app-sidebar.server"
+import { PayWithCoinbaseButton } from "@/components/pay-with-coinbase-button"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -36,6 +37,7 @@ export default function Page() {
         <div className="flex flex-1 flex-col gap-4 px-4 py-10">
           <div className="mx-auto h-full w-full max-w-3xl rounded-xl bg-muted/50">
             <h1 className="text-2xl font-bold">Dashboard</h1>
+            <PayWithCoinbaseButton />
           </div>
         </div>
       </SidebarInset>

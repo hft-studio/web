@@ -12,6 +12,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { LiquidityPoolTable } from "@/components/liquidity-pool-table"
+import { Wallet } from "@/components/wallet"
 
 
 export default function Page() {
@@ -40,6 +41,7 @@ export default function Page() {
           </div>
         </div>
       </SidebarInset>
+      <Wallet />
     </SidebarProvider>
   )
 }
