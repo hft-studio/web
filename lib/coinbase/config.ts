@@ -18,7 +18,8 @@ export const initCoinbase = () => {
 // Initialize on import
 initCoinbase()
 
-export const NETWORK_ID = Coinbase.networks.BaseSepolia
+// Network configuration
+export const NETWORK_ID = Coinbase.networks.BaseMainnet
 
 // Re-export Coinbase and Wallet for convenience
 export { Coinbase, Wallet } from '@coinbase/coinbase-sdk' 
