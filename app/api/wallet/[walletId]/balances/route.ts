@@ -11,7 +11,6 @@ export async function GET(
     const address = await wallet.getDefaultAddress()
     // Fetch balances
     const balances = await address.listBalances()
-    console.log('Balances:', balances)
     const formattedBalances: Record<string, number> = {}
     balances.forEach((balance, currency) => {
       formattedBalances[currency] = parseFloat(balance.toString())

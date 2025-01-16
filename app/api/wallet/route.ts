@@ -1,21 +1,7 @@
 import { createClient } from '../../../lib/supabase/server'
-import { Coinbase, Wallet } from '@coinbase/coinbase-sdk'
+
 import { NextResponse } from 'next/server'
-
-const NETWORK_ID = Coinbase.networks.BaseSepolia
-const API_KEY_NAME = process.env.CDP_API_KEY_NAME as string
-const API_KEY_PRIVATE_KEY = process.env.CDP_API_KEY_PRIVATE_KEY as string
-
-if (!API_KEY_NAME || !API_KEY_PRIVATE_KEY) {
-  throw new Error("CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY must be set");
-}
-
-// Configure the SDK with API key name and private key
-Coinbase.configure({
-  apiKeyName: API_KEY_NAME,
-  privateKey: API_KEY_PRIVATE_KEY.replace(/\\n/g, "\n"),
-})
-
+import { Coinbase, NETWORK_ID, Wallet } from '@/lib/coinbase/config'
 export async function GET() {
   try {
     const supabase = await createClient()

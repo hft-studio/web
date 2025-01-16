@@ -6,9 +6,9 @@ import { createClient } from "@/lib/supabase/server"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
 import { PortfolioChart } from "@/components/portfolio-chart"
 import { AssetsTable } from "@/components/assets-table"
-import { Wallet } from "@/lib/coinbase/config"
 import { WalletControls } from "@/components/wallet-controls"
 import { fetchTokenPrices } from "@/lib/prices"
+import { Wallet } from '@/lib/coinbase/config'
 
 export default async function WalletPage() {
     const supabase = await createClient()
@@ -16,7 +16,6 @@ export default async function WalletPage() {
     if (error || !user) {
         throw new Error(error?.message || "No user found")
     }
-
     // Get or create wallet
     const { data: walletData, error: walletError } = await supabase
         .from("wallets")
@@ -34,7 +33,7 @@ export default async function WalletPage() {
     const cbWallet = await Wallet.fetch(walletData.wallet_id)
     const defaultWallet = await cbWallet.getDefaultAddress()
     const defaultAddress = defaultWallet.getId()
-
+    
     // Fetch balances and prices in parallel
     const [balances, prices] = await Promise.all([
         defaultWallet.listBalances(),
@@ -43,7 +42,7 @@ export default async function WalletPage() {
 
     // Format balances
     const formattedBalances: Record<string, number> = {}
-    balances.forEach((balance, currency) => {
+    balances.forEach((balance: any, currency: string) => {
         formattedBalances[currency.toLowerCase()] = parseFloat(balance.toString())
     })
 
