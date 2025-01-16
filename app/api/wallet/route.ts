@@ -1,4 +1,4 @@
-import { createClient } from '../../../lib/supabase/server'
+import { createClient } from '@/lib/supabase/server'
 
 import { NextResponse } from 'next/server'
 import { NETWORK_ID, Wallet } from '@/lib/coinbase/config'
