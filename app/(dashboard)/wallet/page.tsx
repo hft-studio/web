@@ -1,7 +1,7 @@
 import React from "react"
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
-import { AppSidebar } from "@/components/app-sidebar"s
+import { AppSidebar } from "@/components/app-sidebar"
 import { createClient } from "@/lib/supabase/server"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
 import { PortfolioChart } from "@/components/portfolio-chart"
