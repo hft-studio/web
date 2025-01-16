@@ -6,42 +6,53 @@ import { createClient } from "@/lib/supabase/server"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
 import { PortfolioChart } from "@/components/portfolio-chart"
 import { AssetsTable } from "@/components/assets-table"
-import { Coinbase } from "@coinbase/coinbase-sdk"
-import { Wallet } from "@coinbase/coinbase-sdk"
+import { Wallet } from "@/lib/coinbase/config"
 import { WalletControls } from "@/components/wallet-controls"
-
-
-const API_KEY_NAME = process.env.CDP_API_KEY_NAME as string
-const API_KEY_PRIVATE_KEY = process.env.CDP_API_KEY_PRIVATE_KEY as string
-
-if (!API_KEY_NAME || !API_KEY_PRIVATE_KEY) {
-  throw new Error("CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY must be set")
-}
-
-Coinbase.configure({
-  apiKeyName: API_KEY_NAME,
-  privateKey: API_KEY_PRIVATE_KEY.replace(/\\n/g, "\n"),
-})
+import { fetchTokenPrices } from "@/lib/prices"
 
 export default async function WalletPage() {
     const supabase = await createClient()
     const { data: { user }, error } = await supabase.auth.getUser()
-    if (error) {
-        throw new Error(error.message)
+    if (error || !user) {
+        throw new Error(error?.message || "No user found")
     }
-    const { data: walletData, error: walletError } = await supabase
-          .from("wallets")
-          .select("*")
-          .eq("user_id", user?.id)
-          .single()
 
+    // Get or create wallet
+    const { data: walletData, error: walletError } = await supabase
+        .from("wallets")
+        .select("*")
+        .eq("user_id", user.id)
+        .single()
+
+    if (!walletData) {
+        throw new Error("No wallet found")
+    }
     if (walletError) {
         throw new Error(walletError.message)
     }
-    
+
     const cbWallet = await Wallet.fetch(walletData.wallet_id)
     const defaultWallet = await cbWallet.getDefaultAddress()
-    const defaultAddress = defaultWallet.getWalletId()
+    const defaultAddress = defaultWallet.getId()
+
+    // Fetch balances and prices in parallel
+    const [balances, prices] = await Promise.all([
+        defaultWallet.listBalances(),
+        fetchTokenPrices()
+    ])
+
+    // Format balances
+    const formattedBalances: Record<string, number> = {}
+    balances.forEach((balance, currency) => {
+        formattedBalances[currency.toLowerCase()] = parseFloat(balance.toString())
+    })
+
+    // Calculate total portfolio value
+    let totalValue = 0
+    Object.entries(formattedBalances).forEach(([currency, balance]) => {
+        const price = prices[currency]?.price || 0
+        totalValue += balance * price
+    })
 
     return (
         <SidebarProvider defaultOpen={true}>
@@ -63,14 +74,21 @@ export default async function WalletPage() {
                     </div>
                 </header>
                 <div className="flex flex-1 flex-col gap-8 p-8 max-w-3xl w-full mx-auto">
-                    <div className="mx-auto w-full h-72">
-                        <PortfolioChart />
+                    <div className="mx-auto w-full h-[300px]">
+                        <PortfolioChart 
+                            balances={formattedBalances} 
+                            prices={prices} 
+                            totalValue={totalValue}
+                        />
                     </div>
                     <div className="mx-auto w-full">
                         <WalletControls defaultAddress={defaultAddress} />
                     </div>
                     <div className="mx-auto w-full">
-                        <AssetsTable />
+                        <AssetsTable 
+                            balances={formattedBalances} 
+                            prices={prices} 
+                        />
                     </div>
                 </div>
             </SidebarInset>

@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
-import { Wallet } from '@coinbase/coinbase-sdk'
 
 export async function middleware(request: NextRequest) {
   // Initialize response
@@ -32,12 +31,9 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Handle protected routes
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard') || 
-                          request.nextUrl.pathname.startsWith('/pools')
+  const isProtectedRoute = request.nextUrl.pathname.startsWith('/pools') ||
+                        request.nextUrl.pathname.startsWith('/wallet')
   
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || 
-                     request.nextUrl.pathname.startsWith('/auth')
-
   // Redirect to login if accessing protected route without auth
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone()
@@ -45,7 +41,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // If user is authenticated and on a protected route, ensure they have a wallet
+  // If user is authenticated and on a protected route, check for wallet
   if (user && isProtectedRoute) {
     try {
       // Check if user has a wallet
@@ -56,27 +52,21 @@ export async function middleware(request: NextRequest) {
         .single()
 
       if (!walletData) {
-        // Create new wallet
-        const newWallet = await Wallet.create()
-        
-        // Store wallet info
-        const { error: walletError } = await supabase
-          .from('wallets')
-          .insert({
-            user_id: user.id,
-            wallet_id: newWallet.getId(),
-            created_at: new Date().toISOString()
-          })
+        console.log('No wallet found, creating one')
+        // Create wallet automatically via API route
+        const createWalletResponse = await fetch(new URL('/api/wallet', request.url).toString(), {
+          method: 'Get',
+          headers: {
+            cookie: request.headers.get('cookie') || '',
+          },
+        })
 
-        if (walletError) {
-          console.error('Error creating wallet:', walletError)
-          // Optionally redirect to error page
-          // return NextResponse.redirect(new URL('/error', request.url))
+        if (!createWalletResponse.ok) {
+          console.error('Failed to create wallet automatically')
         }
       }
     } catch (error) {
       console.error('Middleware error:', error)
-      // Handle error appropriately
     }
   }
 

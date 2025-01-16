@@ -1,90 +1,125 @@
 "use client"
 
 import React from "react"
-import { Label, Pie, PieChart, ResponsiveContainer } from "recharts"
-import { ChartConfig, ChartContainer, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
-import { useWallet } from "@/hooks/use-wallet"
+import { Cell, Label, Legend, Pie, PieChart, ResponsiveContainer } from "recharts"
+import { TokenPrices } from "@/lib/prices"
 
-export function PortfolioChart() {
-    const { balances, prices } = useWallet()
-    const portfolioData = React.useMemo(() => {
-        if (!balances || !prices) return []
-        return Object.entries(balances).map(([token, balance]) => ({
-            token,
-            value: balance * (prices[token] ?? 0),
-            fill: `hsl(var(--chart-${Object.keys(balances).indexOf(token) + 1}))`
-        }))
+interface ChartData {
+    token: string
+    value: number
+    fill: string
+}
+
+interface ChartViewBox {
+    cx?: number
+    cy?: number
+    innerRadius?: number
+    outerRadius?: number
+    startAngle?: number
+    endAngle?: number
+    width?: number
+    height?: number
+}
+
+interface PortfolioChartProps {
+    balances: Record<string, number>
+    prices: TokenPrices
+    totalValue: number
+}
+
+export function PortfolioChart({ balances, prices, totalValue }: PortfolioChartProps) {
+    const portfolioData = React.useMemo<ChartData[]>(() => {
+        // Convert balances to array of entries
+        const entries = Object.entries(balances)
+        console.log('Balance entries:', entries)
+        
+        const data = entries.map(([token, balance]): ChartData => {
+            const lowerToken = token.toLowerCase()
+            const value = Number(balance) * (prices[lowerToken]?.price ?? 0)
+            console.log('Processing token:', { token, balance: String(balance), price: prices[lowerToken]?.price ?? 0, value })
+            
+            return {
+                token: token.toUpperCase(),
+                value,
+                fill: `hsl(var(--chart-${entries.findIndex(([t]) => t === token) + 1}))`
+            }
+        }).filter((entry): entry is ChartData => {
+            const isValid = entry.value > 0
+            if (!isValid) {
+                console.log('Filtering out token:', entry)
+            }
+            return isValid
+        })
+        
+        console.log('Final portfolio data:', data)
+        return data
     }, [balances, prices])
 
-    const totalValue = React.useMemo(() => {
-        return portfolioData.reduce((acc, curr) => acc + curr.value, 0)
-    }, [portfolioData])
-
-    const chartConfig: ChartConfig = {
-        eth: {
-            label: "Eth",
-            color: "hsl(var(--chart-1))",
-        },
-        btc: {
-            label: "Btc",
-            color: "hsl(var(--chart-2))",
-        },
-        usdc: {
-            label: "Usdc",
-            color: "hsl(var(--chart-3))",
-        },
+    if (portfolioData.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <p className="text-muted-foreground">No assets to display</p>
+            </div>
+        )
     }
 
     return (
-        <ResponsiveContainer width="100%" height={230}>
-        <ChartContainer config={chartConfig} >
-            <PieChart className="flex flex-row">
+        <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
                 <Pie
                     data={portfolioData}
                     dataKey="value"
                     nameKey="token"
+                    cx="50%"
+                    cy="50%"
                     innerRadius={70}
                     outerRadius={100}
-                    strokeWidth={4}
+                    paddingAngle={2}
+                    strokeWidth={2}
                     stroke="hsl(var(--background))"
                 >
+                    {portfolioData.map((entry) => (
+                        <Cell key={entry.token} fill={entry.fill} />
+                    ))}
                     <Label
                         content={({ viewBox }) => {
-                            if (viewBox && "cx" in viewBox && "cy" in viewBox) {
-                                return (
-                                    <text
-                                        x={viewBox.cx}
-                                        y={viewBox.cy}
-                                        textAnchor="middle"
-                                        dominantBaseline="middle"
+                            const vb = viewBox as ChartViewBox
+                            const cx = vb?.cx ?? 0
+                            const cy = vb?.cy ?? 0
+                            return (
+                                <text
+                                    x={cx}
+                                    y={cy}
+                                    textAnchor="middle"
+                                    dominantBaseline="middle"
+                                >
+                                    <tspan
+                                        x={cx}
+                                        y={cy}
+                                        className="fill-foreground text-xl font-bold"
                                     >
-                                        <tspan
-                                            x={viewBox.cx}
-                                            y={viewBox.cy}
-                                            className="fill-foreground text-xl font-bold"
-                                        >
-                                            ${totalValue.toFixed(2)}
-                                        </tspan>
-                                        <tspan
-                                            x={viewBox.cx}
-                                            y={(viewBox.cy || 0) + 16}
-                                            className="fill-muted-foreground text-xs"
-                                        >
-                                            Total Value
-                                        </tspan>
-                                    </text>
-                                )
-                            }
-                            return null
+                                        ${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </tspan>
+                                    <tspan
+                                        x={cx}
+                                        y={cy + 16}
+                                        className="fill-muted-foreground text-xs"
+                                    >
+                                        Total Value
+                                    </tspan>
+                                </text>
+                            )
                         }}
                     />
                 </Pie>
-                <ChartLegend
-                    content={<ChartLegendContent nameKey="token" />}
-                    className="flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center"
+                <Legend 
+                    verticalAlign="bottom"
+                    height={36}
+                    formatter={(value: string) => (
+                        <span className="text-xs text-muted-foreground">{value}</span>
+                    )}
                 />
             </PieChart>
-        </ChartContainer>
         </ResponsiveContainer>
     )
 } 

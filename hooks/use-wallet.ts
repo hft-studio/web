@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useUser } from './use-user'
 import { createClient } from '@/lib/supabase/client'
 import type { WalletData } from '@/types/wallet'
+import { TokenPrices } from '@/lib/prices'
 
 export function useWallet() {
   const { user } = useUser()
@@ -10,7 +11,7 @@ export function useWallet() {
   const [error, setError] = useState<Error | null>(null)
   const [address, setAddress] = useState<string | null>(null)
   const [balances, setBalances] = useState<Record<string, number> | null>(null)
-  const [prices, setPrices] = useState<Record<string, number> | null>(null)
+  const [prices, setPrices] = useState<TokenPrices | null>(null)
 
   // Fetch prices from our custom API
   useEffect(() => {
@@ -24,10 +25,10 @@ export function useWallet() {
         console.error("Error fetching prices:", err)
         // Fallback prices if API fails
         setPrices({
-          eth: 0,
-          usdc: 1, // USDC should always be ~1
-          weth: 0,
-          btc: 0
+          eth: { price: 0 },
+          usdc: { price: 1 }, // USDC should always be ~1
+          weth: { price: 0 },
+          btc: { price: 0 }
         })
       }
     }
