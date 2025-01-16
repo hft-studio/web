@@ -8,7 +8,7 @@ import { PortfolioChart } from "@/components/portfolio-chart"
 import { AssetsTable } from "@/components/assets-table"
 import { WalletControls } from "@/components/wallet-controls"
 import { fetchTokenPrices } from "@/lib/prices"
-import { Wallet } from '@/lib/coinbase/config'
+import { Wallet} from '@/lib/coinbase/config'
 
 export default async function WalletPage() {
     const supabase = await createClient()
@@ -42,7 +42,7 @@ export default async function WalletPage() {
 
     // Format balances
     const formattedBalances: Record<string, number> = {}
-    balances.forEach((balance: any, currency: string) => {
+    balances.forEach((balance, currency) => {
         formattedBalances[currency.toLowerCase()] = parseFloat(balance.toString())
     })
 
