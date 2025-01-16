@@ -19,11 +19,11 @@ import { NavUser } from "@/components/nav-user"
 import { sidebarConfig } from "@/config/sidebar"
 import { Activity } from "lucide-react"
 
-interface AppSidebarClientProps extends React.ComponentProps<typeof Sidebar> {
-  user?: User | null
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  user: User | null
 }
 
-export function AppSidebarClient({ user, ...props }: AppSidebarClientProps) {
+export function AppSidebar({ user, ...props }: AppSidebarProps) {
   const router = useRouter()
   return (
     <Sidebar

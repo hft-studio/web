@@ -42,6 +42,17 @@ export async function GET() {
       const newWallet = await Wallet.create({ networkId: NETWORK_ID })
       const exportData = await newWallet.export()
 
+      // Request faucet funds if on BaseSepolia
+      if (NETWORK_ID === Coinbase.networks.BaseSepolia) {
+        const address = await newWallet.getDefaultAddress()
+        try {
+          await address.faucet()
+        } catch (faucetError) {
+          console.error('Faucet request failed:', faucetError)
+          // Continue even if faucet fails - wallet creation was successful
+        }
+      }
+
       // Store the new wallet
       const { error: insertError } = await supabase
         .from('wallets')

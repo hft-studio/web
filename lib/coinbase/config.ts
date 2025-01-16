@@ -1,19 +1,24 @@
-import fs from 'fs'
-import path from 'path'
+import { Coinbase } from '@coinbase/coinbase-sdk'
 
-export function ensureCoinbaseConfig() {
-  const configPath = path.join(process.cwd(), 'cdp_api_key.json')
-  
-  // Only create the file if it doesn't exist
-  if (!fs.existsSync(configPath)) {
-    const config = {
-      apiKey: process.env.CDP_API_KEY,
-      apiSecret: process.env.CDP_API_SECRET,
-      environment: process.env.NODE_ENV === 'production' ? 'production' : 'development'
-    }
+const API_KEY_NAME = process.env.CDP_API_KEY_NAME as string
+const API_KEY_PRIVATE_KEY = process.env.CDP_API_KEY_PRIVATE_KEY as string
 
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
-  }
+if (!API_KEY_NAME || !API_KEY_PRIVATE_KEY) {
+  throw new Error("CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY must be set")
+}
 
-  return configPath
-} 
+// Configure the SDK with API key name and private key
+export const initCoinbase = () => {
+  Coinbase.configure({
+    apiKeyName: API_KEY_NAME,
+    privateKey: API_KEY_PRIVATE_KEY.replace(/\\n/g, "\n"),
+  })
+}
+
+// Initialize on import
+initCoinbase()
+
+export const NETWORK_ID = Coinbase.networks.BaseSepolia
+
+// Re-export Coinbase and Wallet for convenience
+export { Coinbase, Wallet } from '@coinbase/coinbase-sdk' 
