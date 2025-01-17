@@ -1,27 +1,46 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { Wallet } from '@/lib/coinbase/config'
+import { NextResponse } from 'next/server'
+import { Wallet, NETWORK_ID } from '@/lib/coinbase/config'
+import { createClient } from '@/lib/supabase/server'
+import { encryptSeed } from '@/lib/encryption'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ walletId: string }> }
-) {
+export async function GET() {
   try {
-    const { walletId } = await params
-    const wallet = await Wallet.fetch(walletId)
-    const address = await wallet.getDefaultAddress()
-    // Fetch balances
-    const balances = await address.listBalances()
-    const formattedBalances: Record<string, number> = {}
-    balances.forEach((balance, currency) => {
-      formattedBalances[currency] = parseFloat(balance.toString())
-    })
+    // Create a new wallet if no walletId provided
+    const supabase = await createClient()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    
+    if (!user || userError) {
+      throw new Error(userError?.message || 'No user found')
+    }
 
-    return NextResponse.json(formattedBalances)
+    // Create new wallet
+    const newWallet = await Wallet.create({ networkId: NETWORK_ID })
+    const defaultAddress = await newWallet.getDefaultAddress()
+    const walletId = newWallet.getId()
+    const exportWallet = await newWallet.export()
+
+    // Encrypt the seed before storing
+    const encryptedSeed = encryptSeed(exportWallet.seed)
+
+    // Store wallet in database
+    const { error: insertError } = await supabase
+      .from('wallets')
+      .insert([{ 
+        user_id: user.id, 
+        wallet_id: exportWallet.walletId, 
+        encrypted_seed: encryptedSeed 
+      }])
+
+    if (insertError) {
+      throw new Error(insertError.message)
+    }
+
+    return NextResponse.json({ walletId, address: defaultAddress.getId() })
   } catch (error) {
-    console.error('Error fetching balances:', error)
+    console.error('Error creating wallet:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to fetch balances' },
+      { error: error instanceof Error ? error.message : 'Failed to create wallet' },
       { status: 500 }
     )
   }
-} 
+}
