@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { Wallet, NETWORK_ID } from '@/lib/coinbase/config'
+import { Wallet, NETWORK_ID } from '@/lib/coinbase'
 import { createClient } from '@/lib/supabase/server'
 import { encryptSeed } from '@/lib/encryption'
 

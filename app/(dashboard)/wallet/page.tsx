@@ -8,7 +8,53 @@ import { PortfolioChart } from "@/components/portfolio-chart"
 import { AssetsTable } from "@/components/assets-table"
 import { WalletControls } from "@/components/wallet-controls"
 import { fetchTokenPrices } from "@/lib/prices"
-import { Wallet} from '@/lib/coinbase/config'
+import { Wallet } from '@/lib/coinbase'
+import { SignOptions, sign } from "jsonwebtoken";
+import crypto from "crypto";
+
+const key_name = process.env.CDP_API_KEY_NAME as string
+const key_secret = process.env.CDP_API_KEY_PRIVATE_KEY as string
+
+if (!key_name || !key_secret) {
+    throw new Error("No API key found")
+}
+
+export type CreateRequestParams = {
+    request_method: "GET" | "POST";
+    request_path: string;
+};
+
+export async function createRequest({
+    request_method,
+    request_path,
+}: CreateRequestParams) {
+    const host = "api.developer.coinbase.com";
+
+    const url = `https://${host}${request_path}`;
+    const uri = `${request_method} ${host}${request_path}`;
+
+    const payload = {
+        iss: "cdp",
+        nbf: Math.floor(Date.now() / 1000),
+        exp: Math.floor(Date.now() / 1000) + 120,
+        sub: key_name,
+        uri,
+    };
+
+    const signOptions: SignOptions = {
+        algorithm: "ES256",
+        header: {
+            alg: "ES256",
+            kid: key_name,
+            // @ts-ignore
+            nonce: crypto.randomBytes(16).toString("hex"),
+        },
+    };
+
+    const jwt = sign(payload, key_secret, signOptions);
+
+    return { url, jwt };
+}
 
 export default async function WalletPage() {
     const supabase = await createClient()
@@ -16,7 +62,9 @@ export default async function WalletPage() {
     if (error || !user) {
         throw new Error(error?.message || "No user found")
     }
-    // Get or create wallet
+
+
+
     const { data: walletData, error: walletError } = await supabase
         .from("wallets")
         .select("*")
@@ -33,7 +81,7 @@ export default async function WalletPage() {
     const cbWallet = await Wallet.fetch(walletData.wallet_id)
     const defaultWallet = await cbWallet.getDefaultAddress()
     const defaultAddress = defaultWallet.getId()
-    
+
     // Fetch balances and prices in parallel
     const [balances, prices] = await Promise.all([
         defaultWallet.listBalances(),
@@ -74,9 +122,9 @@ export default async function WalletPage() {
                 </header>
                 <div className="flex flex-1 flex-col gap-8 p-8 max-w-3xl w-full mx-auto">
                     <div className="mx-auto w-full h-[300px]">
-                        <PortfolioChart 
-                            balances={formattedBalances} 
-                            prices={prices} 
+                        <PortfolioChart
+                            balances={formattedBalances}
+                            prices={prices}
                             totalValue={totalValue}
                         />
                     </div>
@@ -84,9 +132,9 @@ export default async function WalletPage() {
                         <WalletControls defaultAddress={defaultAddress} />
                     </div>
                     <div className="mx-auto w-full">
-                        <AssetsTable 
-                            balances={formattedBalances} 
-                            prices={prices} 
+                        <AssetsTable
+                            balances={formattedBalances}
+                            prices={prices}
                         />
                     </div>
                 </div>

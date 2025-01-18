@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { Wallet } from '@/lib/coinbase/config'
+import { Wallet } from '@/lib/coinbase'
 
 export async function GET(
   request: NextRequest,
