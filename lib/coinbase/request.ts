@@ -40,7 +40,7 @@ export async function createRequest({
         header: {
             alg: "ES256",
             kid: key_name,
-            // @ts-expect-error
+            // @ts-expect-error: This is a Coinbase-specific header
             nonce: generateNonce(),
         },
     };

@@ -31,7 +31,6 @@ export function Withdrawal({ defaultAddress }: WithdrawalProps) {
     const { user } = useUser();
     const searchParams = useSearchParams();
     const status = searchParams.get("status");
-    const error = searchParams.get("error");
     const txHash = searchParams.get("txHash");
 
     const handleClick = () => {
@@ -39,26 +38,6 @@ export function Withdrawal({ defaultAddress }: WithdrawalProps) {
         const url = `https://pay.coinbase.com/v3/sell/input?appId=${appId}&partnerUserId=${user?.id}&addresses={"${defaultAddress}":["base"]}&assets=${assetsString}&redirectUrl=${encodeURIComponent(callbackUrl)}`;
         window.open(url, '_blank');
     };
-
-    // Show different states based on the status
-    if (status === "pending") {
-        return (
-            <Button disabled>
-                Processing Withdrawal...
-            </Button>
-        );
-    }
-
-    if (status === "error") {
-        return (
-            <div className="space-y-2">
-                <Button onClick={handleClick} variant="destructive">
-                    Try Again
-                </Button>
-                {error && <p className="text-sm text-red-500">Error: {error}</p>}
-            </div>
-        );
-    }
 
     useEffect(() => {
         if (status === "withdrawal_success" && txHash) {
