@@ -64,7 +64,6 @@ export async function GET() {
 
         // Redirect to success page with transaction hash
         const successUrl = new URL("/wallet", process.env.NEXT_PUBLIC_APP_URL!)
-        successUrl.searchParams.set("status", "success")
         successUrl.searchParams.set("txHash", transfer.getTransactionHash() || "")
         
         return NextResponse.redirect(successUrl)
