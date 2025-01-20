@@ -2,7 +2,7 @@
 
 import React from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowUpToLine, Copy } from "lucide-react"
+import { Copy } from "lucide-react"
 import { Deposit } from "./deposit";
 import { Withdrawal } from "./withdrawal";
 

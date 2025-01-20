@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { Wallet } from "@/lib/coinbase"
 import { createRequest } from "@/lib/coinbase/request"
 import { decryptSeed } from "@/lib/encryption"
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         // Get user from session
         const supabase = await createClient()
@@ -27,8 +27,7 @@ export async function GET(req: NextRequest) {
         })
 
         const data = await response.json()
-        console.log("Transactions response:", JSON.stringify(data, null, 2))
-
+        
         // Get the most recent transaction
         const latestTransaction = data.transactions[0]
         if (!latestTransaction) {
