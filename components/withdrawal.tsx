@@ -20,7 +20,7 @@ if (!redirectUrl) {
 }
 
 const assets = availableTokens.map(token => token.name);
-const assetsString = '["USDC", "ETH"]';
+const assetsString = JSON.stringify(assets);
 
 interface WithdrawalProps {
     defaultAddress: string;
