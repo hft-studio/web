@@ -9,7 +9,7 @@ export const assetColors = {
 
 export const productIds = {
     eth: "ETH-USD",
-    btc: "BTC-USD",
+    cbbtc: "BTC-USD",
 } as const;
 
 // Map of token display names
