@@ -1,7 +1,7 @@
 import { Coinbase } from '@coinbase/coinbase-sdk'
 
-const API_KEY_NAME = process.env.CDP_API_KEY_NAME as string
-const API_KEY_PRIVATE_KEY = process.env.CDP_API_KEY_PRIVATE_KEY as string
+export const API_KEY_NAME = process.env.CDP_API_KEY_NAME as string
+export const API_KEY_PRIVATE_KEY = process.env.CDP_API_KEY_PRIVATE_KEY as string
 
 if (!API_KEY_NAME || !API_KEY_PRIVATE_KEY) {
   throw new Error("CDP_API_KEY_NAME and CDP_API_KEY_PRIVATE_KEY must be set")
@@ -22,4 +22,4 @@ initCoinbase()
 export const NETWORK_ID = Coinbase.networks.BaseMainnet
 
 // Re-export Coinbase and Wallet for convenience
-export { Coinbase, Wallet } from '@coinbase/coinbase-sdk' 
+export { Coinbase, Wallet } from '@coinbase/coinbase-sdk'
