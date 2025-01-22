@@ -22,4 +22,6 @@ initCoinbase()
 export const NETWORK_ID = Coinbase.networks.BaseMainnet
 
 // Re-export Coinbase and Wallet for convenience
-export { Coinbase, Wallet } from '@coinbase/coinbase-sdk'
+export { Coinbase, Wallet, readContract } from '@coinbase/coinbase-sdk'
+
+

@@ -23,7 +23,7 @@ export default async function WalletPage() {
     if (error || !user) {
         throw new Error(error?.message || "No user found")
     }
-
+    console.log(user.id)
     const { data: walletData, error: walletError } = await supabase
         .from("wallets")
         .select("*")

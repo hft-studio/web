@@ -29,12 +29,13 @@
   resolved "https://registry.yarnpkg.com/@coinbase/cbpay-js/-/cbpay-js-2.4.0.tgz#73bca96450e9d75d7eba0be0320f377aea23c853"
   integrity sha512-7Zy1P6v5CTaBuFYowFmvKJ4KyBngVjsPpLkjSi4DWJhVHMgLIkDUINSloRU0Idgt2rFA/PLIm2gXneR3OoQbrA==
 
-"@coinbase/coinbase-sdk@^0.7.0":
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/@coinbase/coinbase-sdk/-/coinbase-sdk-0.7.0.tgz#b7b093d6fce7053d22f7ed7f58c8c8d25c787ffa"
-  integrity sha512-j4SP1Ly84Ap3cy0IdcLZpGWwjSABnYOLAlQJJpkFFOIdv2g3flyPmsvXpdlO3YEFjkQ+5tNc74sAqSG82zf6bg==
+"@coinbase/coinbase-sdk@^0.15.0":
+  version "0.15.0"
+  resolved "https://registry.yarnpkg.com/@coinbase/coinbase-sdk/-/coinbase-sdk-0.15.0.tgz#5933d3c70f79aa5ce65bba228ac8532d4583bb47"
+  integrity sha512-i2YH/E/HcvUM+VgT+245CzcAyJ6kQg8PJDHBHsFwFdk2vAn+iQn0bjt+C9kgTWvzxUuJA4koHgkcGpdRQa2F/A==
   dependencies:
     "@scure/bip32" "^1.4.0"
+    abitype "^1.0.6"
     axios "^1.6.8"
     axios-mock-adapter "^1.22.0"
     axios-retry "^4.4.1"
@@ -45,6 +46,7 @@
     ethers "^6.12.1"
     node-jose "^2.2.0"
     secp256k1 "^5.0.0"
+    viem "^2.21.26"
 
 "@coinbase/onchainkit@^0.36.4":
   version "0.36.4"
@@ -4662,6 +4664,19 @@ ox@0.6.0:
     abitype "^1.0.6"
     eventemitter3 "5.0.1"
 
+ox@0.6.5:
+  version "0.6.5"
+  resolved "https://registry.yarnpkg.com/ox/-/ox-0.6.5.tgz#e6506a589bd6af9b5fecfcb2c641b63c9882edb6"
+  integrity sha512-vmnH8KvMDwFZDbNY1mq2CBRBWIgSliZB/dFV0xKp+DfF/dJkTENt6nmA+DzHSSAgL/GO2ydjkXWvlndJgSY4KQ==
+  dependencies:
+    "@adraffy/ens-normalize" "^1.10.1"
+    "@noble/curves" "^1.6.0"
+    "@noble/hashes" "^1.5.0"
+    "@scure/bip32" "^1.5.0"
+    "@scure/bip39" "^1.4.0"
+    abitype "^1.0.6"
+    eventemitter3 "5.0.1"
+
 p-limit@^2.2.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/p-limit/-/p-limit-2.3.0.tgz#3dd33c647a214fdfffd835933eb086da0dc21db1"
@@ -6006,6 +6021,20 @@ viem@^2.1.1, viem@^2.21.33:
     isows "1.0.6"
     ox "0.6.0"
     webauthn-p256 "0.0.10"
+    ws "8.18.0"
+
+viem@^2.21.26:
+  version "2.22.11"
+  resolved "https://registry.yarnpkg.com/viem/-/viem-2.22.11.tgz#e8e937980e11688a79559419882347754bb0d009"
+  integrity sha512-r86JkRcE8GVTRKBZADkT01EbmIAkjqJE3xcgeIk1AznKYE/KQfuaki8vZwaOoqQd5jqVZ7m5kGtFFsRe6LEWrg==
+  dependencies:
+    "@noble/curves" "1.7.0"
+    "@noble/hashes" "1.6.1"
+    "@scure/bip32" "1.6.0"
+    "@scure/bip39" "1.5.0"
+    abitype "1.0.7"
+    isows "1.0.6"
+    ox "0.6.5"
     ws "8.18.0"
 
 wagmi@^2.12.24:
