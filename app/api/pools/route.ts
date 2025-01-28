@@ -1,5 +1,7 @@
 import { isWhitelistedPool } from '@/config/pool-whitelist'
+import { readContract, NETWORK_ID } from '@/lib/coinbase'
 import { PoolListItem, PoolDetail } from '@/types/pool'
+import { AERODROME_VOTER_CONTRACT_ADDRESS } from '@/config/aerodrome-contracts'
 
 export const revalidate = 60
  
@@ -20,18 +22,50 @@ export async function GET() {
 
     const detailsArray: PoolDetail[] = [];
     for (const pool of whitelistedPools) {
+      console.log("Processing pool:", pool.symbol, pool.address);
+      
       const detailsResponse = await fetch(url + '/' + pool.address, {
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      const details: PoolDetail = await detailsResponse.json();
-      detailsArray.push(details);
+
+      try {
+        // Get gauge address from Voter contract
+        const gaugeAddress = await readContract({
+          networkId: NETWORK_ID,
+          contractAddress: AERODROME_VOTER_CONTRACT_ADDRESS as `0x${string}`,
+          method: "gauges",
+          args: { pool: pool.address },
+          abi: [{
+            inputs: [{ name: "pool", type: "address" }],
+            name: "gauges",
+            outputs: [{ name: "", type: "address" }],
+            stateMutability: "view",
+            type: "function"
+          }]
+        }) as string;
+
+        console.log("Gauge address for pool", pool.symbol, ":", gaugeAddress);
+        
+        const details: PoolDetail = await detailsResponse.json();
+        
+        detailsArray.push(details);
+      } catch (error) {
+        console.error('Error getting gauge address for pool', pool.symbol, ':', error);
+        const details: PoolDetail = await detailsResponse.json();
+        detailsArray.push(details);
+      }
     }
 
     return Response.json(detailsArray);
   } catch (error) {
     console.error('Error fetching pools:', error);
-    return Response.error();
+    return new Response(JSON.stringify({ error: 'Failed to fetch pools' }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
   }
 }

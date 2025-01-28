@@ -1,4 +1,5 @@
-import { Coinbase } from '@coinbase/coinbase-sdk'
+import { Coinbase } from "@coinbase/coinbase-sdk";
+
 
 export const API_KEY_NAME = process.env.CDP_API_KEY_NAME as string
 export const API_KEY_PRIVATE_KEY = process.env.CDP_API_KEY_PRIVATE_KEY as string
