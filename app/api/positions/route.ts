@@ -100,8 +100,89 @@ export async function GET(request: Request) {
         const pool = pools.find((p: Pool) => p.symbol === "vAMM-USDC/cbBTC")
         if (pool) {
             console.log("Found USDC/cbBTC pool:", pool.address)
-            const balance = await wallet.getBalance(pool.address)
-            console.log("Balance:", balance)
+
+            // Fetch prices
+            const pricesResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/prices`);
+            if (!pricesResponse.ok) {
+                console.log("Prices fetch error:", pricesResponse.statusText);
+                throw new Error(`Failed to fetch prices: ${pricesResponse.statusText}`);
+            }
+            const prices = await pricesResponse.json();
+            console.log("Fetched prices:", prices);
+
+            // Update pool with prices from API
+            pool.token0.price = prices[pool.token0.symbol.toLowerCase()]?.price || 0;
+            pool.token1.price = prices[pool.token1.symbol.toLowerCase()]?.price || 0;
+
+            console.log("Pool data with prices:", {
+                token0: {
+                    symbol: pool.token0.symbol,
+                    price: pool.token0.price,
+                    decimals: pool.token0.decimals
+                },
+                token1: {
+                    symbol: pool.token1.symbol,
+                    price: pool.token1.price,
+                    decimals: pool.token1.decimals
+                },
+                reserves: {
+                    reserve0: pool.reserve0,
+                    reserve1: pool.reserve1
+                }
+            });
+
+            // Get pool balance
+            const poolBalance = await wallet.getBalance(pool.address)
+            console.log("Pool Balance:", poolBalance)
+
+            // Get gauge balance
+            let gaugeBalance = "0"
+            try {
+                // First get the gauge address from the Voter contract
+                const voterAddress = "0x16613524e02ad97eDfeF371bC883F2F5d6C480A5"; // Voter contract on Base
+                const poolGauge = await readContract({
+                    networkId: NETWORK_ID,
+                    contractAddress: voterAddress as `0x${string}`,
+                    method: "gauges",
+                    args: { pool: pool.address },
+                    abi: [{
+                        inputs: [{ name: "pool", type: "address" }],
+                        name: "gauges",
+                        outputs: [{ name: "", type: "address" }],
+                        stateMutability: "view",
+                        type: "function"
+                    }]
+                }) as string;
+                
+                console.log("Pool gauge address:", poolGauge);
+
+                if (poolGauge && poolGauge !== "0x0000000000000000000000000000000000000000") {
+                    // Now get the gauge balance using the correct gauge address
+                    gaugeBalance = (await readContract({
+                        networkId: NETWORK_ID,
+                        contractAddress: poolGauge as `0x${string}`,
+                        method: "balanceOf",
+                        args: { account: defaultAddress.getId() },
+                        abi: [{
+                            inputs: [{ name: "account", type: "address" }],
+                            name: "balanceOf",
+                            outputs: [{ name: "", type: "uint256" }],
+                            stateMutability: "view",
+                            type: "function"
+                        }]
+                    }) as bigint).toString();
+                    console.log("Gauge Balance:", gaugeBalance);
+                } else {
+                    console.log("No gauge found for pool");
+                }
+            } catch (error) {
+                console.log("Error getting gauge balance:", error);
+                // Continue with pool balance only
+            }
+
+            // Total balance is pool + gauge
+            const totalBalance = (Number(poolBalance) + Number(gaugeBalance)).toString()
+            console.log("Total Balance:", totalBalance)
             
             // Get total supply using readContract
             const totalSupply = await readContract({
@@ -110,37 +191,103 @@ export async function GET(request: Request) {
                 method: "totalSupply",
                 args: {}
             });
-            console.log("Total supply value:", totalSupply.toString());
+            console.log("Total supply:", totalSupply.toString())
 
             // Calculate share and token amounts
-            const share = Number(balance) / Number(totalSupply);
-            console.log("Share of pool:", share);
+            const share = Number(totalBalance) / Number(totalSupply);
+            console.log("Share calculation:", {
+                balance: Number(totalBalance),
+                totalSupply: Number(totalSupply),
+                share: share
+            });
 
-            const token0Amount = share * Number(pool.reserve0);
-            const token1Amount = share * Number(pool.reserve1);
-            console.log("Token amounts:", {
-                [pool.token0.symbol]: token0Amount,
-                [pool.token1.symbol]: token1Amount
+            // Convert decimal reserves to integers by multiplying by their respective decimals
+            const reserve0Integer = Math.floor(Number(pool.reserve0) * Math.pow(10, pool.token0.decimals));
+            const reserve1Integer = Math.floor(Number(pool.reserve1) * Math.pow(10, pool.token1.decimals));
+            
+            console.log("Reserve calculations:", {
+                reserve0: pool.reserve0,
+                reserve1: pool.reserve1,
+                reserve0Integer,
+                reserve1Integer,
+                token0_decimals: pool.token0.decimals,
+                token1_decimals: pool.token1.decimals
+            });
+
+            // Convert balance from scientific notation to a regular integer string with proper scaling
+            const balanceScaled = (Number(totalBalance) * 1e30).toFixed(0);  // Scale up significantly to maintain precision
+            console.log("Balance converted:", {
+                original: totalBalance,
+                asNumber: Number(totalBalance),
+                asScaled: balanceScaled
+            });
+
+            // Calculate token amounts using BigInt to maintain precision
+            const scaleFactor = BigInt(1e12); // Additional scaling factor for precision
+            const token0Amount = (BigInt(reserve0Integer) * BigInt(balanceScaled) / BigInt(totalSupply) / scaleFactor).toString();
+            const token1Amount = (BigInt(reserve1Integer) * BigInt(balanceScaled) / BigInt(totalSupply) / scaleFactor).toString();
+            
+            console.log("Token amount calculations:", {
+                token0Amount,
+                token1Amount,
+                token0_symbol: pool.token0.symbol,
+                token1_symbol: pool.token1.symbol
             });
 
             // Calculate USD value
-            const token0Value = token0Amount * pool.token0.price;
-            const token1Value = token1Amount * pool.token1.price;
-            const totalValue = token0Value + token1Value;
-            console.log("Position value:", {
+            const token0Decimal = Number(token0Amount) / Math.pow(10, pool.token0.decimals);
+            const token1Decimal = Number(token1Amount) / Math.pow(10, pool.token1.decimals);
+            
+            console.log("Token decimals:", {
+                token0: token0Decimal,
+                token1: token1Decimal
+            });
+
+            const token0Value = token0Decimal * (pool.token0.price || 0);
+            const token1Value = token1Decimal * (pool.token1.price || 0);
+            const value_usd = token0Value + token1Value;
+
+            console.log("Value calculations:", {
                 token0Value,
                 token1Value,
-                totalValue
+                value_usd,
+                token0_price: pool.token0.price,
+                token1_price: pool.token1.price
             });
 
             positions.push({
-                pool: pool.symbol,
-                share,
+                pool: {
+                    address: pool.address,
+                    symbol: pool.symbol,
+                    token0: {
+                        symbol: pool.token0.symbol,
+                        decimals: pool.token0.decimals
+                    },
+                    token1: {
+                        symbol: pool.token1.symbol,
+                        decimals: pool.token1.decimals
+                    },
+                    is_stable: pool.is_stable
+                },
+                share: share * 100, // Convert to percentage
                 token0Amount,
                 token1Amount,
-                token0Value,
-                token1Value,
-                totalValue
+                token0Value: token0Value || 0,
+                token1Value: token1Value || 0,
+                value_usd: value_usd || 0,
+                // Add staked vs unstaked info
+                unstaked: {
+                    balance: poolBalance,
+                    share: Number(poolBalance) / Number(totalSupply) * 100,
+                    token0Amount: (BigInt(reserve0Integer) * BigInt((Number(poolBalance) * 1e30).toFixed(0)) / BigInt(totalSupply) / scaleFactor).toString(),
+                    token1Amount: (BigInt(reserve1Integer) * BigInt((Number(poolBalance) * 1e30).toFixed(0)) / BigInt(totalSupply) / scaleFactor).toString(),
+                },
+                staked: {
+                    balance: gaugeBalance,
+                    share: Number(gaugeBalance) / Number(totalSupply) * 100,
+                    token0Amount: (BigInt(reserve0Integer) * BigInt((Number(gaugeBalance) * 1e30).toFixed(0)) / BigInt(totalSupply) / scaleFactor).toString(),
+                    token1Amount: (BigInt(reserve1Integer) * BigInt((Number(gaugeBalance) * 1e30).toFixed(0)) / BigInt(totalSupply) / scaleFactor).toString(),
+                }
             });
         }
 

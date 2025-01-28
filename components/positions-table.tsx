@@ -69,7 +69,7 @@ export function PositionsTable() {
     if (positions.length === 0) {
         return <div>No liquidity positions found</div>
     }
-
+    console.log(positions)
     return (
         <Table>
             <TableHeader>
@@ -81,8 +81,8 @@ export function PositionsTable() {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {positions.map((position) => (
-                    <TableRow key={position.pool.address}>
+                {positions.map((position, index) => (
+                    <TableRow key={index}>
                         <TableCell className="font-medium">
                             {position.pool.symbol}
                             <br />
@@ -90,14 +90,16 @@ export function PositionsTable() {
                                 {position.pool.is_stable ? "Stable" : "Volatile"}
                             </span>
                         </TableCell>
-                        <TableCell>{position.share.toFixed(4)}%</TableCell>
+                        <TableCell>
+                            {position.share.toFixed(8)}%
+                        </TableCell>
                         <TableCell>
                             {formatUnits(BigInt(position.token0Amount), position.pool.token0.decimals)} {position.pool.token0.symbol}
                             <br />
                             {formatUnits(BigInt(position.token1Amount), position.pool.token1.decimals)} {position.pool.token1.symbol}
                         </TableCell>
                         <TableCell className="text-right">
-                            ${position.value_usd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ${(position.value_usd || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </TableCell>
                     </TableRow>
                 ))}
