@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
-import { Wallet } from "@/lib/coinbase"
+import { NETWORK_ID, readContract, Wallet } from "@/lib/coinbase"
 import { decryptSeed } from "@/lib/encryption"
-
-const ROUTER_ADDRESS = "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43" // Aerodrome Router
+import { AERODROME_ROUTER_CONTRACT_ADDRESS, AERODROME_VOTER_CONTRACT_ADDRESS } from "@/config/contracts"
 
 export async function POST(request: Request) {
     try {
+        console.log("Deposit request received")
         const { poolAddress, amount } = await request.json()
 
         if (!poolAddress || !amount) {
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
 
         const poolDataUrl = `${process.env.NEXT_PUBLIC_SUGAR_URL}/api/pools/${poolAddress}`
         console.log("Fetching pool data from:", poolDataUrl)
-        
+
         const poolResponse = await fetch(poolDataUrl)
         const poolData = await poolResponse.json()
         console.log("Pool data:", poolData)
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
         // Get user from session
         const supabase = await createClient()
         const { data: { user }, error: userError } = await supabase.auth.getUser()
-        
+
         if (!user || userError) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
         }
@@ -54,7 +54,8 @@ export async function POST(request: Request) {
         // Get the wallet's default address
         const defaultAddress = await wallet.getDefaultAddress()
         console.log("Wallet address:", defaultAddress.getId())
-
+        const exportKey = await defaultAddress.export()
+        console.log("Exported key:", exportKey)
         // Log raw values first
         console.log("Raw amount:", amount)
         console.log("Raw reserve0:", poolData.reserve0)
@@ -64,18 +65,18 @@ export async function POST(request: Request) {
 
         // Convert amount to integer (USDC has 6 decimals)
         const amountInt = "1000000" // 1 USDC
-        
+
         // Convert reserves to integers (multiply by their respective decimals)
         const reserve0Int = Math.floor(parseFloat(poolData.reserve0) * 10 ** poolData.token0.decimals).toString()
         const reserve1Int = Math.floor(parseFloat(poolData.reserve1) * 10 ** poolData.token1.decimals).toString()
-        
+
         console.log("Reserve0 (in wei):", reserve0Int)
         console.log("Reserve1 (in wei):", reserve1Int)
         console.log("Pool ratio (token1/token0):", (parseFloat(poolData.reserve1) / parseFloat(poolData.reserve0)).toString())
-        
+
         // Calculate optimal amounts based on reserves (already in correct decimals)
         const amountBDesired = (
-            (BigInt(amountInt) * BigInt(reserve1Int)) / 
+            (BigInt(amountInt) * BigInt(reserve1Int)) /
             BigInt(reserve0Int)
         ).toString()
 
@@ -90,7 +91,7 @@ export async function POST(request: Request) {
                 contractAddress: poolData.token0.address,
                 method: "approve",
                 args: {
-                    spender: ROUTER_ADDRESS,
+                    spender: AERODROME_ROUTER_CONTRACT_ADDRESS,
                     amount: amountInt
                 },
                 abi: [
@@ -122,7 +123,7 @@ export async function POST(request: Request) {
                 contractAddress: poolData.token1.address,
                 method: "approve",
                 args: {
-                    spender: ROUTER_ADDRESS,
+                    spender: AERODROME_ROUTER_CONTRACT_ADDRESS,
                     amount: amountBDesired
                 },
                 abi: [
@@ -153,6 +154,8 @@ export async function POST(request: Request) {
             stable: poolData.is_stable,
             amountADesired: amountInt,
             amountBDesired: amountBDesired,
+            amountAMin: "0",
+            amountBMin: "0",
             to: defaultAddress.getId(),
             deadline: (Math.floor(Date.now() / 1000) + 3600).toString()
         })
@@ -160,7 +163,7 @@ export async function POST(request: Request) {
         let addLiquidity;
         try {
             addLiquidity = await wallet.invokeContract({
-                contractAddress: ROUTER_ADDRESS,
+                contractAddress: AERODROME_ROUTER_CONTRACT_ADDRESS,
                 method: "addLiquidity",
                 args: {
                     tokenA: poolData.token0.address,
@@ -198,23 +201,118 @@ export async function POST(request: Request) {
                 ]
             })
             console.log("Waiting for liquidity addition...")
-            await addLiquidity.wait()
+            const txReceipt = await addLiquidity.wait()
             console.log("Liquidity added")
+
+            // Get the gauge address
+            const gaugeAddress = await readContract({
+                networkId: NETWORK_ID,
+                contractAddress: AERODROME_VOTER_CONTRACT_ADDRESS as `0x${string}`,
+                method: "gauges",
+                args: { pool: poolData.address },
+                abi: [{
+                    inputs: [{ name: "pool", type: "address" }],
+                    name: "gauges",
+                    outputs: [{ name: "", type: "address" }],
+                    stateMutability: "view",
+                    type: "function"
+                }]
+            }) as string;
+
+            // Get total LP token balance
+            const lpBalance = await readContract({
+                networkId: NETWORK_ID,
+                contractAddress: poolData.address as `0x${string}`,
+                method: "balanceOf",
+                args: { account: defaultAddress.getId() },
+                abi: [{
+                    inputs: [{ name: "account", type: "address" }],
+                    name: "balanceOf",
+                    outputs: [{ name: "", type: "uint256" }],
+                    stateMutability: "view",
+                    type: "function"
+                }]
+            }) as bigint;
+
+            console.log("Total LP balance:", lpBalance.toString());
+
+            if (lpBalance <= BigInt(0)) {
+                console.error("No LP tokens to deposit");
+                throw new Error("No LP tokens to deposit");
+            }
+
+            // The pool address itself is the liquidity token address in Aerodrome
+            const liquidityTokenAddress = poolData.address;
+            console.log("Liquidity token address:", liquidityTokenAddress);
+
+            let approveGauge;
+            try {
+                approveGauge = await wallet.invokeContract({
+                    contractAddress: liquidityTokenAddress as `0x${string}`,
+                    method: "approve",
+                    args: {
+                        spender: gaugeAddress,
+                        amount: lpBalance.toString()
+                    },
+                    abi: [{
+                        constant: false,
+                        inputs: [
+                            { name: "spender", type: "address" },
+                            { name: "amount", type: "uint256" }
+                        ],
+                        name: "approve",
+                        outputs: [{ name: "", type: "bool" }],
+                        payable: false,
+                        stateMutability: "nonpayable",
+                        type: "function"
+                    }]
+                });
+                console.log("Approving gauge to spend LP tokens...");
+                await approveGauge.wait();
+                console.log("Gauge approved");
+            } catch (error) {
+                console.error("Error approving gauge:", error)
+                throw new Error("Failed to approve gauge")
+            }
+
+            // Deposit the liquidity tokens into the Gauge contract
+            let depositGauge;
+            try {
+                depositGauge = await wallet.invokeContract({
+                    contractAddress: gaugeAddress as `0x${string}`,
+                    method: "deposit",
+                    args: {
+                        amount: lpBalance.toString()
+                    },
+                    abi: [
+                        {
+                            "inputs": [{ "name": "amount", "type": "uint256" }],
+                            "name": "deposit",
+                            "outputs": [],
+                            "stateMutability": "nonpayable",
+                            "type": "function"
+                        }
+                    ]
+                })
+                console.log("Waiting for gauge deposit...")
+                await depositGauge.wait()
+                console.log("Tokens deposited into gauge")
+            } catch (error) {
+                console.error("Error depositing into gauge:", error)
+                throw new Error("Failed to deposit into gauge")
+            }
+
+            return NextResponse.json({
+                success: true,
+                txHash: ''
+            })
+
         } catch (error) {
             console.error("Error adding liquidity:", error)
             throw new Error("Failed to add liquidity")
         }
-
-        return NextResponse.json({
-            success: true,
-            txHash: addLiquidity.getTransactionHash()
-        })
-
     } catch (error) {
-        console.error("Error processing deposit:", error)
-        return NextResponse.json(
-            { error: error instanceof Error ? error.message : "Unknown error" },
-            { status: 500 }
-        )
+        console.error("Error adding liquidity:", error)
+        throw new Error("Failed to add liquidity")
     }
-} 
+}

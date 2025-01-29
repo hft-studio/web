@@ -1,7 +1,7 @@
 import { isWhitelistedPool } from '@/config/pool-whitelist'
 import { readContract, NETWORK_ID } from '@/lib/coinbase'
 import { PoolListItem, PoolDetail } from '@/types/pool'
-import { AERODROME_VOTER_CONTRACT_ADDRESS } from '@/config/aerodrome-contracts'
+import { AERODROME_VOTER_CONTRACT_ADDRESS } from '@/config/contracts'
 
 export const revalidate = 60
  
@@ -47,6 +47,7 @@ export async function GET() {
         }) as string;
 
         console.log("Gauge address for pool", pool.symbol, ":", gaugeAddress);
+        console.log("Pool address:", pool.address)
         
         const details: PoolDetail = await detailsResponse.json();
         
