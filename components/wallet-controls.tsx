@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button"
 import { Copy } from "lucide-react"
 import { Deposit } from "./deposit";
 import { Withdrawal } from "./withdrawal";
+import { ClaimButton } from "./claim-button";
 
 export function WalletControls(props: {
-    defaultAddress: string
+    defaultAddress: string;
+    poolAddress?: string;
 }) {
    
 
@@ -37,7 +39,8 @@ export function WalletControls(props: {
             
             <div className="flex gap-2">
                 <Deposit defaultAddress={props.defaultAddress} />
-                <Withdrawal defaultAddress={props.defaultAddress} />
+                <Withdrawal defaultAddress={props.defaultAddress} poolAddress={props.poolAddress} />
+                {props.poolAddress && <ClaimButton poolAddress={props.poolAddress} />}
             </div>
         </div>
     )

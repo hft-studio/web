@@ -24,19 +24,60 @@ const assetsString = JSON.stringify(assets);
 
 interface WithdrawalProps {
     defaultAddress: string;
+    poolAddress?: string;
 }
 
-export function Withdrawal({ defaultAddress }: WithdrawalProps) {
+export function Withdrawal({ defaultAddress, poolAddress }: WithdrawalProps) {
     const router = useRouter();
     const { user } = useUser();
     const searchParams = useSearchParams();
     const status = searchParams.get("status");
     const txHash = searchParams.get("txHash");
 
+    const handleLiquidityRemoval = async () => {
+        try {
+            const response = await fetch('/api/withdrawal', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    poolAddress,
+                    amount: '0'
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to remove liquidity');
+            }
+
+            const result = await response.json();
+            if (result.success) {
+                toast.success("Liquidity removed successfully", {
+                    description: "View transaction on Basescan",
+                    action: {
+                        label: "View",
+                        onClick: () => window.open(`https://basescan.org/tx/${result.txHash}`, '_blank'),
+                    }
+                });
+                router.refresh();
+            }
+        } catch (error) {
+            toast.error("Failed to remove liquidity", {
+                description: error instanceof Error ? error.message : "Unknown error occurred"
+            });
+        }
+    };
+
     const handleClick = () => {
-        const callbackUrl = `${redirectUrl}/api/offramp/callback`;
-        const url = `https://pay.coinbase.com/v3/sell/input?appId=${appId}&partnerUserId=${user?.id}&addresses={"${defaultAddress}":["base"]}&assets=${assetsString}&redirectUrl=${encodeURIComponent(callbackUrl)}`;
-        window.open(url, '_blank');
+        if (poolAddress) {
+            handleLiquidityRemoval();
+        } else {
+            const callbackUrl = `${redirectUrl}/api/offramp/callback`;
+            const url = `https://pay.coinbase.com/v3/sell/input?appId=${appId}&partnerUserId=${user?.id}&addresses={"${defaultAddress}":["base"]}&assets=${assetsString}&redirectUrl=${encodeURIComponent(callbackUrl)}`;
+            window.open(url, '_blank');
+        }
     };
 
     useEffect(() => {

@@ -85,7 +85,10 @@ export default async function WalletPage() {
                         />
                     </div>
                     <div className="mx-auto w-full">
-                        <WalletControls defaultAddress={defaultAddress} />
+                        <WalletControls 
+                            defaultAddress={defaultAddress} 
+                            poolAddress="0x9c38b55f9A9Aba91BbCEDEb12bf4428f47A6a0B8"  // USDC/cbBTC pool address
+                        />
                     </div>
                     <div className="mx-auto w-full">
                         <AssetsTable
