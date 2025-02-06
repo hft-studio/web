@@ -1,28 +1,40 @@
-import { Metadata } from "next"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import React from "react"
+import { createClient } from "@/lib/supabase/server"
+import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
+import { Separator } from "@/components/ui/separator"
+import { AppSidebar } from "@/components/app-sidebar"
 import { PositionsTable } from "@/components/positions-table"
 
-export const metadata: Metadata = {
-    title: "Liquidity Positions",
-    description: "View your liquidity positions across all pools",
-}
-
-export default function PositionsPage() {
+export default async function PositionsPage() {
+    const supabase = await createClient()
+    const { data: { user }, error } = await supabase.auth.getUser()
+    if (error) {
+        throw error
+    }
     return (
-        <div className="flex-1 space-y-4 p-8 pt-6">
-            <div className="flex items-center justify-between space-y-2">
-                <h2 className="text-3xl font-bold tracking-tight">Liquidity Positions</h2>
-            </div>
-            <div className="grid gap-4">
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Your Active Positions</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <PositionsTable />
-                    </CardContent>
-                </Card>
-            </div>
-        </div>
+        <SidebarProvider defaultOpen={true}>
+            <AppSidebar user={user} />
+            <SidebarInset>
+                <header className="flex h-14 shrink-0 items-center gap-2">
+                    <div className="flex flex-1 items-center gap-2 px-3">
+                        <SidebarTrigger />
+                        <Separator orientation="vertical" className="mr-2 h-4" />
+                        <Breadcrumb>
+                            <BreadcrumbList>
+                                <BreadcrumbItem>
+                                    <BreadcrumbPage className="line-clamp-1">
+                                        Positions
+                                    </BreadcrumbPage>
+                                </BreadcrumbItem>
+                            </BreadcrumbList>
+                        </Breadcrumb>
+                    </div>
+                </header>
+                <div className="flex flex-1 flex-col gap-4 h-fullmax-w-3xl mx-auto">
+                    <PositionsTable />
+                </div>
+            </SidebarInset>
+        </SidebarProvider>
     )
 } 

@@ -11,6 +11,11 @@ export const sidebarConfig = {
       title: "Wallet",
       url: "/wallet",
       icon: Wallet,
+    },
+    {
+      title: "Positions",
+      url: "/positions",
+      icon: Droplets,
     }
   ]
 }
