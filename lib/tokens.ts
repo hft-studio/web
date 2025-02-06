@@ -43,7 +43,7 @@ export const usdcToken: Token = {
 export const btcToken: Token = {
     name: 'BTC',
     address: '0x2260fac5e55429eea605b5f39e13221c0f9e9222',
-    symbol: 'BTC',
+    symbol: 'cbBTC',
     decimals: 8,
     image:
         'https://wallet-api-production.s3.amazonaws.com/uploads/tokens/btc_288.png',

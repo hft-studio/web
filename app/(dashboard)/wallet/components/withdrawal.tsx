@@ -1,7 +1,7 @@
 "use client"
 
 import { useSearchParams, useRouter } from "next/navigation";
-import { Button } from "./ui/button";
+import { Button } from "@/components/ui/button";
 import { useUser } from "@/hooks/use-user";
 import { availableTokens } from "@/config/tokens-whitelist";
 import { ArrowUpToLine } from "lucide-react";

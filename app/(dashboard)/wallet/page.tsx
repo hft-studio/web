@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
 import { PortfolioChart } from "@/components/portfolio-chart"
 import { AssetsTable } from "@/components/assets-table"
-import { WalletControls } from "@/components/wallet-controls"
+import { WalletControls } from "./components/wallet-controls"
 import { fetchTokenPrices } from "@/lib/prices"
 import { Wallet } from '@/lib/coinbase'
 
@@ -45,7 +45,7 @@ export default async function WalletPage() {
         defaultWallet.listBalances(),
         fetchTokenPrices()
     ])
-
+    console.log(balances)
     const formattedBalances: Record<string, number> = {}
     balances.forEach((balance, currency) => {
         formattedBalances[currency.toLowerCase()] = parseFloat(balance.toString())
