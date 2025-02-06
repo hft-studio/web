@@ -17,11 +17,8 @@ export async function POST(request: Request) {
         }
 
         const poolDataUrl = `${process.env.NEXT_PUBLIC_SUGAR_URL}/api/pools/${poolAddress}`;
-        console.log("Fetching pool data from:", poolDataUrl);
-        
         const poolResponse = await fetch(poolDataUrl);
         const poolData = await poolResponse.json();
-        console.log("Pool data:", poolData);
 
         if (!poolData) {
             return NextResponse.json({ error: "Pool not found" }, { status: 404 });
@@ -53,8 +50,6 @@ export async function POST(request: Request) {
 
         // Get the wallet's default address
         const defaultAddress = await wallet.getDefaultAddress();
-        console.log("Wallet address:", defaultAddress.getId());
-
         // Get the gauge address
         const gaugeAddress = await readContract({
             networkId: NETWORK_ID,
@@ -70,7 +65,6 @@ export async function POST(request: Request) {
             }]
         }) as string;
 
-        console.log("Gauge address:", gaugeAddress);
 
         // Get staked balance in gauge
         const stakedBalance = await readContract({
@@ -87,8 +81,6 @@ export async function POST(request: Request) {
             }]
         }) as bigint;
 
-        console.log("Staked balance:", stakedBalance.toString());
-
         // Get unstaked LP token balance
         const unstakedBalance = await readContract({
             networkId: NETWORK_ID,
@@ -103,8 +95,6 @@ export async function POST(request: Request) {
                 type: "function"
             }]
         }) as bigint;
-
-        console.log("Unstaked balance:", unstakedBalance.toString());
 
         if (stakedBalance <= BigInt(0) && unstakedBalance <= BigInt(0)) {
             return NextResponse.json({ error: "No LP tokens to withdraw" }, { status: 400 });
@@ -130,11 +120,7 @@ export async function POST(request: Request) {
                     }]
                 });
 
-                console.log("Withdrawing from gauge...");
                 await withdrawTx.wait();
-                console.log("Withdrawn from gauge");
-                
-                // Add staked balance to the amount we'll remove
                 lpTokensToRemove = unstakedBalance + stakedBalance;
             }
 
@@ -142,10 +128,6 @@ export async function POST(request: Request) {
                 return NextResponse.json({ error: "No LP tokens available after withdrawal" }, { status: 400 });
             }
 
-            // Approve router to spend LP tokens
-            console.log("Approving router to spend LP tokens...");
-            console.log("Amount to remove:", lpTokensToRemove.toString());
-            
             const approveLPTx = await wallet.invokeContract({
                 contractAddress: poolAddress as `0x${string}`,
                 method: "approve",
@@ -167,9 +149,6 @@ export async function POST(request: Request) {
                 }]
             });
             await approveLPTx.wait();
-            console.log("Router approved");
-
-            // Now remove liquidity
             const removeLiquidityTx = await wallet.invokeContract({
                 contractAddress: AERODROME_ROUTER_CONTRACT_ADDRESS as `0x${string}`,
                 method: "removeLiquidity",
@@ -204,10 +183,7 @@ export async function POST(request: Request) {
                 }]
             });
 
-            console.log("Removing liquidity...");
             await removeLiquidityTx.wait();
-            console.log("Liquidity removed");
-
             return NextResponse.json({
                 success: true,
                 txHash: removeLiquidityTx.getTransactionHash()

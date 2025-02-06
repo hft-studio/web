@@ -1,5 +1,4 @@
 import { isWhitelistedPool } from '@/config/pool-whitelist'
-import { readContract, NETWORK_ID } from '@/lib/coinbase'
 import { PoolListItem, PoolDetail } from '@/types/pool'
 import { getPoolDetails, getPoolList } from '@/lib/aerodrome'
 
@@ -15,6 +14,7 @@ export async function GET() {
 
     const detailsArray: PoolDetail[] = [];
     for (const pool of whitelistedPools) {
+      console.log(pool)
       const details = await getPoolDetails(pool.address);
         detailsArray.push(details);
     }

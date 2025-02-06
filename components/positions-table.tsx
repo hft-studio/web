@@ -23,12 +23,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Position } from "@/types/position"
 import { Button } from "./ui/button"
 import { MoreHorizontal, ArrowUpToLine, ArrowDownToLine, Loader2 } from "lucide-react"
-import { useWallet } from "@/hooks/use-wallet"
 import { toast } from "sonner"
 import { DepositDialog } from "./deposit-dialog"
 
@@ -40,8 +37,6 @@ export function PositionsTable() {
     const [isDepositDialogOpen, setIsDepositDialogOpen] = useState(false)
     const [selectedPosition, setSelectedPosition] = useState<Position | null>(null)
     const [isWithdrawing, setIsWithdrawing] = useState(false)
-
-    const { address } = useWallet()
 
     useEffect(() => {
         async function fetchPositions() {

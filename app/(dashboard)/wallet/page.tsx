@@ -23,7 +23,6 @@ export default async function WalletPage() {
     if (error || !user) {
         throw new Error(error?.message || "No user found")
     }
-    console.log(user.id)
     const { data: walletData, error: walletError } = await supabase
         .from("wallets")
         .select("*")
@@ -45,7 +44,6 @@ export default async function WalletPage() {
         defaultWallet.listBalances(),
         fetchTokenPrices()
     ])
-    console.log(balances)
     const formattedBalances: Record<string, number> = {}
     balances.forEach((balance, currency) => {
         formattedBalances[currency.toLowerCase()] = parseFloat(balance.toString())

@@ -6,7 +6,6 @@ import { AERODROME_VOTER_CONTRACT_ADDRESS } from "@/config/contracts";
 
 export async function POST(request: Request) {
     try {
-        console.log("Claim request received");
         const { poolAddress } = await request.json();
 
         if (!poolAddress) {
@@ -42,8 +41,6 @@ export async function POST(request: Request) {
 
         // Get the wallet's default address
         const defaultAddress = await wallet.getDefaultAddress();
-        console.log("Wallet address:", defaultAddress.getId());
-
         // Get the gauge address
         const gaugeAddress = await readContract({
             networkId: NETWORK_ID,
@@ -59,8 +56,6 @@ export async function POST(request: Request) {
             }]
         }) as string;
 
-        console.log("Gauge address:", gaugeAddress);
-
         // Check if there are any rewards to claim
         const earned = await readContract({
             networkId: NETWORK_ID,
@@ -75,8 +70,6 @@ export async function POST(request: Request) {
                 type: "function"
             }]
         }) as bigint;
-
-        console.log("Earned rewards:", earned.toString());
 
         if (earned <= BigInt(0)) {
             return NextResponse.json({ error: "No rewards to claim" }, { status: 400 });
@@ -118,10 +111,7 @@ export async function POST(request: Request) {
                 }]
             });
 
-            console.log("Claiming rewards...");
             await claimTx.wait();
-            console.log("Rewards claimed");
-
             return NextResponse.json({
                 success: true,
                 txHash: claimTx.getTransactionHash()

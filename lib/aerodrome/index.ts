@@ -28,18 +28,10 @@ export const getPoolList = async () => {
     return pools;
 }
 
-export async function getPosition(pool: Pool, prices: any): Promise<Position> {
-    const { defaultWallet, defaultAddress } = await getWallet();
-    console.log(pool)
-
-    // Get pool balance
-    const poolBalance = await defaultWallet.getBalance(pool.address);
-
-    console.log("Pool Balance:", poolBalance);
-
+export async function getPosition(pool: Pool): Promise<Position> {
+    const { defaultAddress } = await getWallet();
     const poolDetails = await getPoolDetails(pool.address);
 
-    // Get gauge balance
     let gaugeBalance = "0";
     let gaugeTotalSupply = "0";
     try {
@@ -58,8 +50,6 @@ export async function getPosition(pool: Pool, prices: any): Promise<Position> {
                 type: "function"
             }]
         }) as string;
-
-        console.log("Pool gauge address:", poolGauge);
 
         if (poolGauge && poolGauge !== "0x0000000000000000000000000000000000000000") {
             // Now get the gauge balance using the correct gauge address
@@ -90,39 +80,16 @@ export async function getPosition(pool: Pool, prices: any): Promise<Position> {
                     type: "function"
                 }]
             }) as bigint).toString();
-
-            console.log("Gauge Balance:", gaugeBalance);
-            console.log("Gauge Total Supply:", gaugeTotalSupply);
         } else {
             console.log("No gauge found for pool");
         }
     } catch (error) {
         console.log("Error getting gauge balance:", error);
-        // Continue with pool balance only
     }
-    console.log(gaugeBalance, gaugeTotalSupply)
 
     const share = Number(gaugeBalance) / Number(gaugeTotalSupply)
-    console.log("Share:", share)
-    console.log(share * pool.reserve0_usd)
-    console.log(share * pool.reserve1_usd)
-    // Total balance is pool + gauge
-    const totalBalance = (Number(poolBalance) + Number(gaugeBalance)).toString();
-    console.log("Total Balance:", totalBalance);
-
-
-    // Convert decimal reserves to integers by multiplying by their respective decimals
-    const reserve0Integer = BigInt(Math.floor(Number(pool.reserve0) * 1e6)); // USDC has 6 decimals
-    const reserve1Integer = BigInt(Math.floor(Number(pool.reserve1) * 1e8)); // cbBTC has 8 decimals
-
-    console.log('reserve0Integer', reserve0Integer)
-    console.log('reserve1Integer', reserve1Integer)
-
-    // Calculate total amounts
     const token0Amount = share * pool.reserve0_usd;
     const token1Amount = share * pool.reserve1_usd;
-    // Calculate USD value
-
 
     const position: Position = {
         pool,
@@ -130,6 +97,5 @@ export async function getPosition(pool: Pool, prices: any): Promise<Position> {
         token1Amount: token1Amount.toString(),
         poolDetails: poolDetails,
     };
-    console.log(position)
     return position
 }
