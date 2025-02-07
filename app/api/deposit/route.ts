@@ -83,7 +83,10 @@ export async function POST(request: Request) {
                     }
                 ]
             })
-            await approveToken0.wait()
+            const receipt0 = await approveToken0.wait()
+            
+            // Add a small delay between transactions
+            await new Promise(resolve => setTimeout(resolve, 2000))
         } catch (error) {
             console.log("Error approving token0:", error)
             throw new Error("Failed to approve token0")
@@ -101,7 +104,7 @@ export async function POST(request: Request) {
                 abi: [
                     {
                         "inputs": [
-                            { "name": "spender", type: "address" },
+                            { "name": "spender", "type": "address" },
                             { "name": "amount", "type": "uint256" }
                         ],
                         "name": "approve",
@@ -111,7 +114,10 @@ export async function POST(request: Request) {
                     }
                 ]
             })
-            await approveToken1.wait()
+            const receipt1 = await approveToken1.wait()
+            
+            // Add a small delay before the next transaction
+            await new Promise(resolve => setTimeout(resolve, 2000))
         } catch (error) {
             console.log("Error approving token1:", error)
             throw new Error("Failed to approve token1")
@@ -128,6 +134,7 @@ export async function POST(request: Request) {
                     stable: poolData.is_stable,
                     amountADesired: amountInt,
                     amountBDesired: amountBDesired,
+                    amountAMin: "0",
                     amountBMin: "0",
                     to: defaultAddress.getId(),
                     deadline: (Math.floor(Date.now() / 1000) + 3600).toString()
