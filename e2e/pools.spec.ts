@@ -1,3 +1,4 @@
+import { farmsRoute, loginRoute } from '@/config/routes'
 import { test, expect } from '@playwright/test'
 
 const TEST_EMAIL = process.env.TEST_EMAIL!
@@ -6,7 +7,7 @@ const TEST_PASSWORD = process.env.TEST_PASSWORD!
 test.describe('Pools Table', () => {
   test.beforeEach(async ({ page }) => {
     // Login first
-    await page.goto('/login')
+    await page.goto(loginRoute)
     await page.waitForSelector('form')
     await page.fill('#email', TEST_EMAIL)
     await page.fill('#password', TEST_PASSWORD)
@@ -18,7 +19,7 @@ test.describe('Pools Table', () => {
 
   test('should display whitelisted pools', async ({ page }) => {
     // Go to pools page
-    await page.goto('/pools')
+    await page.goto(farmsRoute)
 
     // Wait for table to load
     await page.waitForSelector('table')
@@ -33,9 +34,9 @@ test.describe('Pools Table', () => {
     await page.context().clearCookies()
     
     // Try to access pools page directly
-    await page.goto('/pools')
+    await page.goto(farmsRoute)
     
     // Should be redirected to login
-    await expect(page).toHaveURL('/login')
+    await expect(page).toHaveURL(loginRoute)
   })
 }) 

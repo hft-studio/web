@@ -7,7 +7,8 @@ import { Deposit } from "./deposit";
 import { Withdrawal } from "./withdrawal";
 
 export function WalletControls(props: {
-    defaultAddress: string
+    defaultAddress: string;
+    poolAddress?: string;
 }) {
    
 

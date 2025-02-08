@@ -1,12 +1,12 @@
 import React from "react"
-import { LiquidityPoolTable } from "@/components/liquidity-pool-table"
 import { createClient } from "@/lib/supabase/server"
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { AppSidebar } from "@/components/app-sidebar"
+import { PositionsTable } from "@/components/positions-table"
 
-export default async function PoolsPage() {
+export default async function PositionsPage() {
     const supabase = await createClient()
     const { data: { user }, error } = await supabase.auth.getUser()
     if (error) {
@@ -24,7 +24,7 @@ export default async function PoolsPage() {
                             <BreadcrumbList>
                                 <BreadcrumbItem>
                                     <BreadcrumbPage className="line-clamp-1">
-                                        Dashboard
+                                        Farms
                                     </BreadcrumbPage>
                                 </BreadcrumbItem>
                             </BreadcrumbList>
@@ -32,7 +32,7 @@ export default async function PoolsPage() {
                     </div>
                 </header>
                 <div className="flex flex-1 flex-col gap-4 h-fullmax-w-3xl mx-auto">
-                    <LiquidityPoolTable />
+                    <PositionsTable />
                 </div>
             </SidebarInset>
         </SidebarProvider>

@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
 import { PortfolioChart } from "@/components/portfolio-chart"
 import { AssetsTable } from "@/components/assets-table"
-import { WalletControls } from "@/components/wallet-controls"
+import { WalletControls } from "./components/wallet-controls"
 import { fetchTokenPrices } from "@/lib/prices"
 import { Wallet } from '@/lib/coinbase'
 
@@ -23,7 +23,6 @@ export default async function WalletPage() {
     if (error || !user) {
         throw new Error(error?.message || "No user found")
     }
-
     const { data: walletData, error: walletError } = await supabase
         .from("wallets")
         .select("*")
@@ -45,7 +44,6 @@ export default async function WalletPage() {
         defaultWallet.listBalances(),
         fetchTokenPrices()
     ])
-
     const formattedBalances: Record<string, number> = {}
     balances.forEach((balance, currency) => {
         formattedBalances[currency.toLowerCase()] = parseFloat(balance.toString())
@@ -85,7 +83,10 @@ export default async function WalletPage() {
                         />
                     </div>
                     <div className="mx-auto w-full">
-                        <WalletControls defaultAddress={defaultAddress} />
+                        <WalletControls 
+                            defaultAddress={defaultAddress} 
+                            poolAddress="0x9c38b55f9A9Aba91BbCEDEb12bf4428f47A6a0B8"  // USDC/cbBTC pool address
+                        />
                     </div>
                     <div className="mx-auto w-full">
                         <AssetsTable

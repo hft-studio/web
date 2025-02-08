@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/sidebar"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { loginRoute } from "@/config/routes"
 
 interface NavUserProps {
   user: User | null | undefined
@@ -83,7 +84,7 @@ export function NavUser({ user }: NavUserProps) {
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={async () => {
               await supabase.auth.signOut()
-              router.push('/login')
+              router.push(loginRoute)
             }}>
               <LogOut />
               Log out

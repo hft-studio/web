@@ -33,7 +33,7 @@ export function AssetsTable({ balances, prices }: AssetsTableProps) {
                     {Object.entries(balances).map(([currency, balance]) => {
                         const price = prices[currency]?.price || 0
                         const value = balance * price
-                        const token = availableTokens.find(t => t.name.toLowerCase() === currency.toLowerCase())
+                        const token = availableTokens.find(t => t.symbol.toLowerCase() === currency.toLowerCase())
 
                         if (!token) return null
 
@@ -42,7 +42,7 @@ export function AssetsTable({ balances, prices }: AssetsTableProps) {
                                 <TableCell className="font-medium">
                                     <div className="flex items-center gap-2">
                                         <TokenImage size={24} token={token} />
-                                        <span>{currency.toUpperCase()}</span>
+                                        <span>{token.name.toUpperCase()}</span>
                                     </div>
                                 </TableCell>
                                 <TableCell>{balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 8 })}</TableCell>
