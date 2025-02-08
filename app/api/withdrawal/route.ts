@@ -42,14 +42,11 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Wallet not found" }, { status: 404 });
         }
 
-        // Initialize wallet
         const wallet = await Wallet.fetch(walletData.wallet_id);
         const seed = await decryptSeed(walletData.encrypted_seed);
         wallet.setSeed(seed);
 
-        // Get the wallet's default address
         const defaultAddress = await wallet.getDefaultAddress();
-        // Get the gauge address
         const gaugeAddress = await readContract({
             networkId: NETWORK_ID,
             contractAddress: AERODROME_VOTER_CONTRACT_ADDRESS as `0x${string}`,
@@ -65,7 +62,6 @@ export async function POST(request: Request) {
         }) as string;
 
 
-        // Get staked balance in gauge
         const stakedBalance = await readContract({
             networkId: NETWORK_ID,
             contractAddress: gaugeAddress as `0x${string}`,
@@ -80,7 +76,6 @@ export async function POST(request: Request) {
             }]
         }) as bigint;
 
-        // Get unstaked LP token balance
         const unstakedBalance = await readContract({
             networkId: NETWORK_ID,
             contractAddress: poolAddress as `0x${string}`,
@@ -102,7 +97,6 @@ export async function POST(request: Request) {
         try {
             let lpTokensToRemove = unstakedBalance;
 
-            // If there are staked tokens, withdraw them first
             if (stakedBalance > BigInt(0)) {
                 const withdrawTx = await wallet.invokeContract({
                     contractAddress: gaugeAddress as `0x${string}`,
@@ -147,9 +141,7 @@ export async function POST(request: Request) {
                     type: "function"
                 }]
             });
-            // Wait for approval transaction to be mined and confirmed
-            const approvalReceipt = await approveLPTx.wait();
-            // Verify the allowance after approval
+            await approveLPTx.wait();
             const allowance = await readContract({
                 networkId: NETWORK_ID,
                 contractAddress: poolAddress as `0x${string}`,

@@ -83,7 +83,7 @@ export async function POST(request: Request) {
                     }
                 ]
             })
-            const receipt0 = await approveToken0.wait()
+            await approveToken0.wait()
             
             // Add a small delay between transactions
             await new Promise(resolve => setTimeout(resolve, 2000))
@@ -114,7 +114,7 @@ export async function POST(request: Request) {
                     }
                 ]
             })
-            const receipt1 = await approveToken1.wait()
+            await approveToken1.wait()
             
             // Add a small delay before the next transaction
             await new Promise(resolve => setTimeout(resolve, 2000))

@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { useRouter } from "next/navigation"
 import { Bot } from "lucide-react"
+import { loginRoute, farmsRoute } from "@/config/routes";
 
 interface AuthFormProps {
   mode: 'login' | 'signup'
@@ -22,7 +23,7 @@ export const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
     const formData = new FormData(event.currentTarget)
     const success = await onSubmit(formData)
     if (success) {
-      router.push('/dashboard')
+      router.push(farmsRoute)
     } else {
       toast({
         title: "Oops",
@@ -73,7 +74,7 @@ export const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
                 ) : (
                   <>
                     Already have an account?{" "}
-                    <Link href="/login" className="underline">
+                    <Link href={loginRoute} className="underline">
                       Login
                     </Link>
                   </>

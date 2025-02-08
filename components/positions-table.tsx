@@ -38,29 +38,30 @@ export function PositionsTable() {
     const [selectedPosition, setSelectedPosition] = useState<Position | null>(null)
     const [isWithdrawing, setIsWithdrawing] = useState(false)
 
-    useEffect(() => {
-        async function fetchPositions() {
-            try {
-                const response = await fetch("/api/positions")
-                const data = await response.json()
+    const refreshPositions = async () => {
+        setLoading(true)
+        try {
+            const response = await fetch("/api/positions")
+            const data = await response.json()
 
-                if (!response.ok) {
-                    throw new Error(data.error || "Failed to fetch positions")
-                }
-
-                setPositions(data.positions)
-            } catch (error) {
-                setError(error instanceof Error ? error.message : "Unknown error")
-            } finally {
-                setLoading(false)
+            if (!response.ok) {
+                throw new Error(data.error || "Failed to fetch farms")
             }
-        }
 
-        fetchPositions()
+            setPositions(data.positions)
+        } catch (error) {
+            setError(error instanceof Error ? error.message : "Unknown error")
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        refreshPositions()
     }, [])
 
     if (loading) {
-        return <div>Loading positions...</div>
+        return <div>Loading farms...</div>
     }
 
     if (error) {
@@ -134,6 +135,7 @@ export function PositionsTable() {
                 ),
             })
             setIsWithdrawDialogOpen(false)
+            await refreshPositions()
         } catch (error) {
             console.error('Error withdrawing:', error);
             toast.error("Withdrawal Failed", {
@@ -157,7 +159,7 @@ export function PositionsTable() {
                 <Table>
                     <TableHeader className="bg-muted/50">
                         <TableRow>
-                            <TableHead>Pool</TableHead>
+                            <TableHead>Farm</TableHead>
                             <TableHead>Type</TableHead>
                             <TableHead>APR</TableHead>
                             <TableHead>Status</TableHead>
@@ -242,6 +244,7 @@ export function PositionsTable() {
                 pool={selectedPosition?.pool ?? null}
                 open={isDepositDialogOpen}
                 onOpenChange={setIsDepositDialogOpen}
+                onSuccess={refreshPositions}
             />
         </>
     )

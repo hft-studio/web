@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { loginRoute } from '@/config/routes'
 
 export async function middleware(request: NextRequest) {
   // Initialize response
@@ -37,7 +38,7 @@ export async function middleware(request: NextRequest) {
   // Redirect to login if accessing protected route without auth
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = loginRoute
     return NextResponse.redirect(url)
   }
 

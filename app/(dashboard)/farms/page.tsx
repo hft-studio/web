@@ -24,7 +24,7 @@ export default async function PositionsPage() {
                             <BreadcrumbList>
                                 <BreadcrumbItem>
                                     <BreadcrumbPage className="line-clamp-1">
-                                        Positions
+                                        Farms
                                     </BreadcrumbPage>
                                 </BreadcrumbItem>
                             </BreadcrumbList>

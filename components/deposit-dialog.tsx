@@ -18,9 +18,10 @@ interface DepositDialogProps {
   pool: PoolDetail | null
   open: boolean
   onOpenChange: (open: boolean) => void
+  onSuccess: () => void
 }
 
-export function DepositDialog({ pool, open, onOpenChange }: DepositDialogProps) {
+export function DepositDialog({ pool, open, onOpenChange, onSuccess }: DepositDialogProps) {
   const [depositAmount, setDepositAmount] = useState("")
   const [token1Amount, setToken1Amount] = useState("0")
   const [isDepositing, setIsDepositing] = useState(false)
@@ -39,9 +40,10 @@ export function DepositDialog({ pool, open, onOpenChange }: DepositDialogProps) 
     }
   }, [depositAmount, pool])
 
-  const handleDeposit = async () => {
-    if (!pool || !depositAmount) return;
-    
+  const handleDeposit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!pool) return
+
     setIsDepositing(true)
     try {
       const response = await fetch('/api/deposit', {
@@ -74,6 +76,7 @@ export function DepositDialog({ pool, open, onOpenChange }: DepositDialogProps) 
         ),
       })
       onOpenChange(false)
+      onSuccess()
       setDepositAmount("")
     } catch (error) {
       console.error('Error depositing:', error);
