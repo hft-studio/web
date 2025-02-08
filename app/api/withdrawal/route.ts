@@ -6,7 +6,6 @@ import { AERODROME_ROUTER_CONTRACT_ADDRESS, AERODROME_VOTER_CONTRACT_ADDRESS } f
 
 export async function POST(request: Request) {
     try {
-        console.log("Withdraw request received");
         const { poolAddress, amount } = await request.json();
 
         if (!poolAddress || !amount) {
@@ -148,7 +147,33 @@ export async function POST(request: Request) {
                     type: "function"
                 }]
             });
-            await approveLPTx.wait();
+            // Wait for approval transaction to be mined and confirmed
+            const approvalReceipt = await approveLPTx.wait();
+            // Verify the allowance after approval
+            const allowance = await readContract({
+                networkId: NETWORK_ID,
+                contractAddress: poolAddress as `0x${string}`,
+                method: "allowance",
+                args: { 
+                    owner: defaultAddress.getId(),
+                    spender: AERODROME_ROUTER_CONTRACT_ADDRESS
+                },
+                abi: [{
+                    inputs: [
+                        { name: "owner", type: "address" },
+                        { name: "spender", type: "address" }
+                    ],
+                    name: "allowance",
+                    outputs: [{ name: "", type: "uint256" }],
+                    stateMutability: "view",
+                    type: "function"
+                }]
+            }) as bigint;
+
+            if (allowance < lpTokensToRemove) {
+                throw new Error("Approval failed - allowance not set correctly");
+            }
+
             const removeLiquidityTx = await wallet.invokeContract({
                 contractAddress: AERODROME_ROUTER_CONTRACT_ADDRESS as `0x${string}`,
                 method: "removeLiquidity",
