@@ -77,7 +77,11 @@ export function PositionsTable() {
 
     const getStatus = (position: Position) => {
         if (position.pool.symbol.includes('vAMM')) {
-            return <div className="text-emerald-500">Active</div>
+            if (((Number(position.token0Amount) + Number(position.token1Amount)) > 0)) {
+                return <div className="text-emerald-500">Active</div>
+            } else {
+                return <div className="text-gray-500">Inactive</div>
+            }
         }
     }
 
