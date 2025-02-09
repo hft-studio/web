@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/sidebar"
 import { NavUser } from "@/components/nav-user"
 import { sidebarConfig } from "@/config/sidebar"
-import { Activity } from "lucide-react"
+import Image from "next/image"
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   user: User | null
@@ -33,15 +33,17 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
         <SidebarHeader>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton size="lg" asChild className="md:h-8 md:p-0">
-                <a href="#">
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
-                    <Activity className="size-4 text-green-500" />
-                  </div>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">hft.studio</span>
-                  </div>
-                </a>
+              <SidebarMenuButton size="lg" asChild className="w-full flex items-center justify-center transition-all duration-200 group">
+                <div className="relative w-24 h-24 md:w-48 md:h-32 flex items-center justify-center">
+                  <Image
+                    src="/logo-t.png"
+                    alt="HFT Studio Logo"
+                    width={192}
+                    height={192}
+                    className="object-contain scale-125 transition-transform duration-200 group-data-[state=closed]:scale-50"
+                    priority
+                  />
+                </div>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
