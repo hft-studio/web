@@ -1,12 +1,12 @@
 'use client';
 import Link from "next/link"
+import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { useRouter } from "next/navigation"
-import { Bot } from "lucide-react"
 import { loginRoute, farmsRoute } from "@/config/routes";
 
 interface AuthFormProps {
@@ -38,11 +38,18 @@ export const AuthForm = ({ mode, onSubmit }: AuthFormProps) => {
         <div className="w-full h-full lg:grid lg:h-full lg:grid-cols-1">
           <div className="flex items-center justify-center h-full py-12">
             <div className="mx-auto grid w-[350px] gap-6">
-              <Link className="flex items-center justify-center" href="#">
-                <Bot className="h-6 w-6 text-green-500" />
-                <span className="ml-2 text-2xl font-bold tracking-tight">hft.studio</span>
+              <Link className="flex items-center justify-center animate-fade-in relative z-0" href="#">
+                <div className="relative w-[600px] h-[250px] -my-16 pointer-events-none">
+                  <Image
+                    src="/logo-t.png"
+                    alt="HFT Studio Logo"
+                    fill
+                    className="object-contain scale-[2] transition-transform duration-300"
+                    priority
+                  />
+                </div>
               </Link>
-              <div className="grid gap-4">
+              <div className="grid gap-4 animate-fade-in relative z-10">
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
