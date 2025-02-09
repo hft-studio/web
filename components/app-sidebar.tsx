@@ -38,8 +38,8 @@ export function AppSidebar({ user, ...props }: AppSidebarProps) {
                   <Image
                     src="/logo-t.png"
                     alt="HFT Studio Logo"
-                    width={192}
-                    height={192}
+                    width={256}
+                    height={256}
                     className="object-contain scale-125 transition-transform duration-200 group-data-[state=closed]:scale-50"
                     priority
                   />
