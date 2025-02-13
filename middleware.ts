@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
 
   // Handle protected routes
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/pools') ||
+  const isProtectedRoute = request.nextUrl.pathname.startsWith('/farms') ||
                         request.nextUrl.pathname.startsWith('/wallet')
   
   // Redirect to login if accessing protected route without auth
